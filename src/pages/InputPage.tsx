@@ -1,8 +1,7 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import { FileUpload, Home, Link as LinkIcon, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
+import { Upload, Home, Link as LinkIcon, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const InputPage = () => {
@@ -77,7 +76,6 @@ const InputPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate required fields
     if (!name.trim()) {
       toast({
         title: "Missing information",
@@ -127,22 +125,11 @@ const InputPage = () => {
       
       console.log('Submitting form data', { name, email, phone, visaType, filesCount: files.length, link });
       
-      // In a real implementation, replace with actual webhook URL
-      // const response = await fetch('https://igta.app.n8n.cloud/webhook/DETAILS_SUBMISSION_WEBHOOK', {
-      //   method: 'POST',
-      //   body: formData,
-      // });
-      
-      // For demo purposes, simulate a successful response
-      // const data = await response.json();
-      
-      // Mock response for demonstration
       const mockResponse = {
         score: 78,
         overview: "Your O-1A visa application shines with a commendable score of 78%, reflecting a robust and promising case. You demonstrate exceptional prowess in 'Recognized Prizes or Awards,' earning 20 out of 25 points, thanks to your prestigious international accolades that underscore your global recognition. Additionally, your 'Published Material About the Beneficiary' category stands out with 18 out of 25 points, bolstered by impactful media coverage that highlights your achievements. However, there are notable gaps that hold back your full potential: 'Membership in Recognized Associations' scores 0 out of 25 points due to the absence of documented affiliations with elite organizations, a critical criterion for demonstrating peer recognition. Based on this evaluation, your case is likely to be Approved, yet strengthening these weaker areas could elevate your application to an even more compelling level."
       };
       
-      // Store the evaluation result
       localStorage.setItem('evaluationResult', JSON.stringify(mockResponse));
       
       setTimeout(() => {
@@ -264,7 +251,7 @@ const InputPage = () => {
                   className="hidden"
                   onChange={handleFileChange}
                 />
-                <FileUpload size={36} className="text-blue-400 mb-3" />
+                <Upload size={36} className="text-blue-400 mb-3" />
                 <p className="text-blue-400 mb-1">Drag & drop files here or click to browse</p>
                 <p className="text-gray-400 text-sm">Accept PDF, DOC, JPG (up to 20MB each)</p>
               </div>
