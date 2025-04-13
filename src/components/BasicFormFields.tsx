@@ -28,6 +28,9 @@ const BasicFormFields: React.FC<FormFieldsProps> = ({
 }) => {
   const { toast } = useToast();
   
+  // List of specific visa types
+  const visaTypes = ["P-1", "O-1a", "O-1B", "EB1a", "O2", "P1s", "Eb2NIW", "b1", "B2"];
+  
   return (
     <>
       <div>
@@ -86,7 +89,7 @@ const BasicFormFields: React.FC<FormFieldsProps> = ({
           
           {dropdownOpen && (
             <div className="absolute z-10 w-full mt-1 bg-visa-dark-gray border border-visa-lilac/30 rounded-lg shadow-lg shadow-visa-light-lilac/20 animate-fade-in">
-              {["O-1A", "EB-1", "O-1B", "NIW", "Not sure which one to choose"].map((type) => (
+              {visaTypes.map((type) => (
                 <div
                   key={type}
                   className="px-4 py-3 hover:bg-visa-lilac/20 cursor-pointer transition-colors duration-200"
