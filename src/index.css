@@ -55,7 +55,7 @@
   }
   
   .form-container {
-    @apply bg-visa-dark-gray rounded-xl p-6 md:p-8 shadow-lg;
+    @apply bg-visa-dark-gray/90 rounded-xl p-6 md:p-8 shadow-lg;
   }
   
   .glass-container {
@@ -68,5 +68,16 @@
   
   .file-upload-area {
     @apply border-2 border-dashed border-blue-400 rounded-lg p-8 flex flex-col items-center justify-center text-center cursor-pointer bg-visa-dark-gray/50 hover:bg-visa-dark-gray/80 transition-colors;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-out forwards;
   }
 }
