@@ -91,7 +91,11 @@
   }
   
   .home-light-bg {
-    @apply bg-gradient-to-br from-gray-50 to-blue-50;
+    @apply bg-gray-100;
+  }
+  
+  .enhanced-glass {
+    @apply bg-custom-card/30 backdrop-filter backdrop-blur-lg border border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.3)];
   }
 }
 
@@ -105,3 +109,4 @@
     animation: fadeIn 0.3s ease-out forwards;
   }
 }
+
