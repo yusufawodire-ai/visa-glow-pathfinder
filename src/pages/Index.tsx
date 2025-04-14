@@ -10,7 +10,7 @@ const Index = () => {
     <div className="min-h-screen flex flex-col items-center justify-center p-4 md:p-8 home-light-bg">
       <div className="absolute top-4 left-4">
         <img 
-          src="/lovable-uploads/69f314e1-76ae-4ee9-bae8-4c284b46919d.png" 
+          src="/lovable-uploads/caa62bb9-590f-4b12-bb2a-74ef5c9e949a.png" 
           alt="Sherrod Sports Visas" 
           className="h-16 md:h-20"
         />

@@ -161,14 +161,14 @@ const ResultPage = () => {
         </Button>
         
         <img 
-          src="/lovable-uploads/69f314e1-76ae-4ee9-bae8-4c284b46919d.png" 
+          src="/lovable-uploads/caa62bb9-590f-4b12-bb2a-74ef5c9e949a.png" 
           alt="Sherrod Sports Visas" 
           className="h-12 md:h-16"
         />
       </div>
       
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="enhanced-glass flex flex-col h-full bg-custom-card/30 border-custom-primary-accent/30 shadow-[0_0_15px_rgba(139,30,63,0.2)]">
+        <div className="bg-custom-card rounded-xl p-6 border border-custom-border/20 shadow-lg">
           <h2 className="text-2xl font-semibold mb-6 text-center soft-white-glow">
             Your Chances of Success
           </h2>
@@ -199,8 +199,8 @@ const ResultPage = () => {
                 />
                 <defs>
                   <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#9EC6B8" />
-                    <stop offset="100%" stopColor="#7D91A6" />
+                    <stop offset="0%" stopColor="#D4AF37" />
+                    <stop offset="100%" stopColor="#9EC6B8" />
                   </linearGradient>
                 </defs>
               </svg>
@@ -217,12 +217,12 @@ const ResultPage = () => {
           </div>
         </div>
         
-        <div className="enhanced-glass flex flex-col h-full bg-custom-card/30 border-custom-primary-accent/30 shadow-[0_0_15px_rgba(139,30,63,0.2)]">
+        <div className="bg-custom-card rounded-xl p-6 border border-custom-border/20 shadow-lg">
           <h2 className="text-2xl font-semibold mb-6 text-center soft-white-glow">
             Chat with Us
           </h2>
           
-          <div className="flex-grow overflow-auto mb-4 space-y-4">
+          <div className="flex-grow overflow-auto mb-4 space-y-4 h-[400px] p-2">
             {chatMessages.map((message, index) => (
               <div 
                 key={index} 
@@ -251,7 +251,7 @@ const ResultPage = () => {
             <div ref={chatEndRef} />
           </div>
           
-          <div className="flex">
+          <div className="flex mt-4">
             <textarea
               value={currentMessage}
               onChange={(e) => setCurrentMessage(e.target.value)}
@@ -264,9 +264,9 @@ const ResultPage = () => {
             <Button
               onClick={sendMessage}
               disabled={isLoading || !currentMessage.trim()}
-              className="gold-gradient-btn p-3 h-auto animate-home-pulse"
+              className="bg-custom-card hover:bg-custom-card/80 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-custom-border light-glow animate-home-pulse"
             >
-              <SendHorizontal size={20} className="text-custom-secondary-accent" />
+              <SendHorizontal size={20} className="text-custom-tertiary-accent" />
             </Button>
           </div>
         </div>
