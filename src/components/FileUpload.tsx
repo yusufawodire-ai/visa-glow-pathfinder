@@ -16,6 +16,17 @@ const FileUpload: React.FC<FileUploadProps> = ({ files, setFiles }) => {
     if (!e.target.files?.length) return;
     
     const newFiles = Array.from(e.target.files);
+    
+    // Check if adding these files would exceed the 5 file limit
+    if (files.length + newFiles.length > 5) {
+      toast({
+        title: "Too many files",
+        description: "You can upload a maximum of 5 documents",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     const validFiles = validateFiles(newFiles);
     
     setFiles(prev => [...prev, ...validFiles]);
@@ -65,6 +76,17 @@ const FileUpload: React.FC<FileUploadProps> = ({ files, setFiles }) => {
     if (!e.dataTransfer.files?.length) return;
     
     const newFiles = Array.from(e.dataTransfer.files);
+    
+    // Check if adding these files would exceed the 5 file limit
+    if (files.length + newFiles.length > 5) {
+      toast({
+        title: "Too many files",
+        description: "You can upload a maximum of 5 documents",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     const validFiles = validateFiles(newFiles);
     
     setFiles(prev => [...prev, ...validFiles]);
@@ -112,6 +134,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ files, setFiles }) => {
           {isDragging ? 'Drop files here' : 'Drag & drop files here or click to browse'}
         </p>
         <p className="text-gray-400 text-sm">Accept PDF, DOC, JPG (up to 20MB each)</p>
+        <p className="text-gray-400 text-sm mt-1">Maximum 5 documents allowed</p>
       </div>
       
       {files.length > 0 && (
@@ -124,7 +147,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ files, setFiles }) => {
             >
               <div className="flex items-center">
                 <CheckCircle size={16} className="text-green-400 mr-2" />
-                <span className="truncate max-w-[80%]">{file.name}</span>
+                <span className="truncate max-w-[80%] text-white">{file.name}</span>
               </div>
               <button
                 type="button"

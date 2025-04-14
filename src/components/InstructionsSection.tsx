@@ -45,10 +45,15 @@ const InstructionsSection: React.FC = () => {
               <span>Employment contracts or offer letters</span>
             </li>
           </ul>
-          <p className="mt-4 text-sm text-gray-400 border-t border-visa-lilac/10 pt-3">
-            Submitting comprehensive documentation will help provide a more accurate assessment. 
-            All documents are processed securely and confidentially.
-          </p>
+          <div className="mt-4 text-sm text-gray-400 border-t border-visa-lilac/10 pt-3">
+            <p className="mb-2">
+              Submitting comprehensive documentation will help provide a more accurate assessment. 
+              All documents are processed securely and confidentially.
+            </p>
+            <p className="text-visa-light-lilac font-medium">
+              Important: Please do not upload more than 5 documents total.
+            </p>
+          </div>
         </div>
       )}
     </div>

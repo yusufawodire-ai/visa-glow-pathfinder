@@ -8,8 +8,8 @@ const Index = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 md:p-8 bg-[#1a1209] relative overflow-hidden">
-      {/* Logo at top right */}
-      <div className="absolute top-4 right-4 md:top-8 md:right-8">
+      {/* Logo at top right with soft glowing white background */}
+      <div className="absolute top-4 right-4 md:top-8 md:right-8 p-3 rounded-full bg-white/10 backdrop-blur-sm shadow-[0_0_15px_rgba(255,255,255,0.3)]">
         <img 
           src="/lovable-uploads/659255b7-8321-4cb4-ba30-23527ef785e9.png" 
           alt="Sherrod Sports Visas" 
@@ -20,9 +20,8 @@ const Index = () => {
       {/* Content with glow effects similar to the reference image */}
       <div className="max-w-5xl w-full text-center space-y-12 z-10 mt-16">
         <h1 className="text-4xl md:text-6xl lg:text-7xl font-semibold text-white tracking-tight">
-          <span className="block mb-2">Turn your athletic</span>
-          <span className="block mb-2">talent into</span>
-          <span className="text-visa-gold">opportunity</span>
+          <span className="block mb-2">Evaluate your</span>
+          <span className="text-visa-gold">Visa Eligibility</span>
         </h1>
         
         <p className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto">
