@@ -92,6 +92,22 @@ export default {
             boxShadow: "0 0 15px 3px rgba(139, 30, 63, 0.7), 0 0 30px 6px rgba(0, 39, 76, 0.5)" 
           }
         },
+        "pulse-strong": {
+          "0%, 100%": { 
+            boxShadow: "0 0 15px 5px rgba(212, 175, 55, 0.7), 0 0 30px 8px rgba(158, 198, 184, 0.6)"
+          },
+          "50%": { 
+            boxShadow: "0 0 25px 10px rgba(212, 175, 55, 0.9), 0 0 40px 15px rgba(158, 198, 184, 0.8)" 
+          }
+        },
+        "home-pulse": {
+          "0%, 100%": { 
+            boxShadow: "0 0 10px 2px rgba(158, 198, 184, 0.5), 0 0 20px 4px rgba(125, 145, 166, 0.3)"
+          },
+          "50%": { 
+            boxShadow: "0 0 15px 3px rgba(158, 198, 184, 0.7), 0 0 30px 6px rgba(125, 145, 166, 0.5)" 
+          }
+        },
         "shine": {
           "0%": { backgroundPosition: "200% center" },
           "100%": { backgroundPosition: "-200% center" }
@@ -113,6 +129,8 @@ export default {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "pulse-glow": "pulse-glow 2s ease-in-out infinite",
+        "pulse-strong": "pulse-strong 3s ease-in-out infinite",
+        "home-pulse": "home-pulse 2s ease-in-out infinite",
         "shine": "shine 3s linear infinite",
         "float": "float 3s ease-in-out infinite",
         "fade-in": "fade-in 0.5s ease-out",
@@ -120,10 +138,11 @@ export default {
       },
       backgroundImage: {
         "gradient-shimmer": "linear-gradient(90deg, transparent, rgba(139, 30, 63, 0.2), transparent)",
-        "gradient-score": "linear-gradient(90deg, #8B1E3F, #00274C)",
+        "gradient-score": "linear-gradient(90deg, #9EC6B8, #7D91A6)",
         "gradient-gold": "linear-gradient(90deg, #D4AF37, #FFC857)",
       }
     }
   },
   plugins: [require("tailwindcss-animate")],
 } satisfies Config;
+

@@ -155,26 +155,26 @@ const ResultPage = () => {
       <div className="flex justify-between items-center mb-8">
         <Button
           onClick={() => navigate('/')}
-          className="bg-custom-card hover:bg-custom-card/80 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-custom-border"
+          className="bg-custom-card hover:bg-custom-card/80 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-custom-border light-glow"
         >
           <Home size={20} />
         </Button>
         
         <img 
-          src="/lovable-uploads/caa62bb9-590f-4b12-bb2a-74ef5c9e949a.png" 
+          src="/lovable-uploads/69f314e1-76ae-4ee9-bae8-4c284b46919d.png" 
           alt="Sherrod Sports Visas" 
           className="h-12 md:h-16"
         />
       </div>
       
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="glass-container flex flex-col h-full bg-custom-card border-custom-primary-accent/30 shadow-[0_0_15px_rgba(139,30,63,0.2)]">
-          <h2 className="text-2xl font-semibold mb-6 text-center shimmering-text">
+        <div className="enhanced-glass flex flex-col h-full bg-custom-card/30 border-custom-primary-accent/30 shadow-[0_0_15px_rgba(139,30,63,0.2)]">
+          <h2 className="text-2xl font-semibold mb-6 text-center soft-white-glow">
             Your Chances of Success
           </h2>
           
           <div className="flex justify-center mb-8">
-            <div className="relative h-40 w-40 flex items-center justify-center">
+            <div className="relative h-40 w-40 flex items-center justify-center active-gradient-circle">
               <svg className="absolute inset-0" viewBox="0 0 100 100">
                 <circle
                   cx="50"
@@ -195,12 +195,12 @@ const ResultPage = () => {
                   strokeDasharray={`${2 * Math.PI * 45 * evaluationResult.score / 100} ${2 * Math.PI * 45 * (1 - evaluationResult.score / 100)}`}
                   strokeDashoffset={2 * Math.PI * 45 * 0.25}
                   strokeLinecap="round"
-                  className="animate-pulse-glow"
+                  className="animate-pulse-strong"
                 />
                 <defs>
                   <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#8B1E3F" />
-                    <stop offset="100%" stopColor="#00274C" />
+                    <stop offset="0%" stopColor="#9EC6B8" />
+                    <stop offset="100%" stopColor="#7D91A6" />
                   </linearGradient>
                 </defs>
               </svg>
@@ -208,17 +208,17 @@ const ResultPage = () => {
             </div>
           </div>
           
-          <h2 className="text-2xl font-semibold mb-4 shimmering-text">
+          <h2 className="text-2xl font-semibold mb-4 soft-white-glow">
             Overview
           </h2>
           
           <div className="prose prose-invert flex-grow overflow-auto">
-            <p className="text-custom-text-secondary whitespace-pre-line">{evaluationResult.overview}</p>
+            <p className="text-white whitespace-pre-line">{evaluationResult.overview}</p>
           </div>
         </div>
         
-        <div className="glass-container flex flex-col h-full bg-custom-card border-custom-primary-accent/30 shadow-[0_0_15px_rgba(139,30,63,0.2)]">
-          <h2 className="text-2xl font-semibold mb-6 text-center shimmering-text">
+        <div className="enhanced-glass flex flex-col h-full bg-custom-card/30 border-custom-primary-accent/30 shadow-[0_0_15px_rgba(139,30,63,0.2)]">
+          <h2 className="text-2xl font-semibold mb-6 text-center soft-white-glow">
             Chat with Us
           </h2>
           
@@ -264,7 +264,7 @@ const ResultPage = () => {
             <Button
               onClick={sendMessage}
               disabled={isLoading || !currentMessage.trim()}
-              className="gold-gradient-btn p-3 h-auto"
+              className="gold-gradient-btn p-3 h-auto animate-home-pulse"
             >
               <SendHorizontal size={20} className="text-custom-secondary-accent" />
             </Button>

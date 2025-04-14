@@ -7,10 +7,10 @@ const Index = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 md:p-8 bg-custom-background">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 md:p-8 home-light-bg">
       <div className="absolute top-4 left-4">
         <img 
-          src="/lovable-uploads/caa62bb9-590f-4b12-bb2a-74ef5c9e949a.png" 
+          src="/lovable-uploads/69f314e1-76ae-4ee9-bae8-4c284b46919d.png" 
           alt="Sherrod Sports Visas" 
           className="h-16 md:h-20"
         />
@@ -21,14 +21,14 @@ const Index = () => {
           Evaluate Your Visa Eligibility
         </h1>
         
-        <p className="text-lg md:text-xl text-custom-text-secondary max-w-2xl mx-auto">
+        <p className="text-lg md:text-xl text-gray-700 max-w-2xl mx-auto">
           Upload your documents and get a detailed evaluation of your visa eligibility with personalized recommendations.
         </p>
         
         <div className="pt-6">
           <button 
             onClick={() => navigate('/input')}
-            className="gold-gradient-btn group"
+            className="gold-gradient-btn group animate-home-pulse"
           >
             Start Evaluation
             <ArrowRight className="ml-2 inline-block group-hover:translate-x-1 transition-transform" size={20} />

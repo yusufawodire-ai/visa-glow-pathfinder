@@ -12,7 +12,7 @@ const SubmitButton: React.FC<SubmitButtonProps> = ({ isLoading }) => {
       <button
         type="submit"
         disabled={isLoading}
-        className="gold-gradient-btn flex items-center justify-center min-w-[220px] group"
+        className="gold-gradient-btn flex items-center justify-center min-w-[220px] group animate-home-pulse"
       >
         {isLoading ? (
           <>
