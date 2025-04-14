@@ -56,12 +56,13 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))"
         },
-        // Custom colors as requested
+        // Custom colors based on the Sherrod Sports Visas branding
         custom: {
           "background": "#111111",
           "card": "#1A1A1A",
-          "primary-accent": "#9EC6B8",
-          "secondary-accent": "#7D91A6",
+          "primary-accent": "#8B1E3F", // Burgundy from logo
+          "secondary-accent": "#00274C", // Navy blue from logo
+          "tertiary-accent": "#D4AF37", // Gold/yellow from logo
           "text-primary": "#F2F2F2",
           "text-secondary": "#B3B3B3",
           "border": "#2D2D2D",
@@ -85,11 +86,15 @@ export default {
         },
         "pulse-glow": {
           "0%, 100%": { 
-            boxShadow: "0 0 10px 2px rgba(158, 198, 184, 0.4), 0 0 20px 4px rgba(125, 145, 166, 0.2)"
+            boxShadow: "0 0 10px 2px rgba(139, 30, 63, 0.5), 0 0 20px 4px rgba(0, 39, 76, 0.3)"
           },
           "50%": { 
-            boxShadow: "0 0 15px 3px rgba(158, 198, 184, 0.6), 0 0 30px 6px rgba(125, 145, 166, 0.3)" 
+            boxShadow: "0 0 15px 3px rgba(139, 30, 63, 0.7), 0 0 30px 6px rgba(0, 39, 76, 0.5)" 
           }
+        },
+        "shine": {
+          "0%": { backgroundPosition: "200% center" },
+          "100%": { backgroundPosition: "-200% center" }
         },
         "float": {
           "0%, 100%": { transform: "translateY(0)" },
@@ -108,13 +113,15 @@ export default {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "pulse-glow": "pulse-glow 2s ease-in-out infinite",
+        "shine": "shine 3s linear infinite",
         "float": "float 3s ease-in-out infinite",
         "fade-in": "fade-in 0.5s ease-out",
         "shimmer": "shimmer 2s linear infinite"
       },
       backgroundImage: {
-        "gradient-shimmer": "linear-gradient(90deg, transparent, rgba(158, 198, 184, 0.2), transparent)",
-        "gradient-score": "linear-gradient(90deg, #9EC6B8, #7D91A6)",
+        "gradient-shimmer": "linear-gradient(90deg, transparent, rgba(139, 30, 63, 0.2), transparent)",
+        "gradient-score": "linear-gradient(90deg, #8B1E3F, #00274C)",
+        "gradient-gold": "linear-gradient(90deg, #D4AF37, #FFC857)",
       }
     }
   },

@@ -130,15 +130,15 @@ const InputPage = () => {
         </Button>
         
         <img 
-          src="/lovable-uploads/90dcd5c2-0a85-4d67-bd69-0679632b1bf2.png" 
+          src="/lovable-uploads/caa62bb9-590f-4b12-bb2a-74ef5c9e949a.png" 
           alt="Sherrod Sports Visas" 
           className="h-12 md:h-16"
         />
       </div>
       
       <div className="max-w-4xl mx-auto">
-        <div className="form-container">
-          <h1 className="text-2xl md:text-3xl font-semibold mb-2 text-center bg-gradient-to-r from-custom-primary-accent to-custom-secondary-accent bg-clip-text text-transparent">Global Talent Visa Assessment</h1>
+        <div className="form-container border border-custom-primary-accent/30 shadow-[0_0_15px_rgba(139,30,63,0.2)]">
+          <h1 className="text-2xl md:text-3xl font-semibold mb-2 text-center shimmering-text">Global Talent Visa Assessment</h1>
           <p className="text-custom-text-secondary text-center mb-8 max-w-2xl mx-auto">Upload your documents and get a detailed evaluation of your visa eligibility with personalized recommendations.</p>
           
           <form onSubmit={handleSubmit} className="space-y-6">

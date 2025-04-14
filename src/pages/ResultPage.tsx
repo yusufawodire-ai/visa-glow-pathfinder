@@ -161,15 +161,15 @@ const ResultPage = () => {
         </Button>
         
         <img 
-          src="/lovable-uploads/90dcd5c2-0a85-4d67-bd69-0679632b1bf2.png" 
+          src="/lovable-uploads/caa62bb9-590f-4b12-bb2a-74ef5c9e949a.png" 
           alt="Sherrod Sports Visas" 
           className="h-12 md:h-16"
         />
       </div>
       
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="glass-container flex flex-col h-full bg-custom-card border-custom-border">
-          <h2 className="text-2xl font-semibold mb-6 text-center bg-gradient-to-r from-custom-primary-accent to-custom-secondary-accent bg-clip-text text-transparent">
+        <div className="glass-container flex flex-col h-full bg-custom-card border-custom-primary-accent/30 shadow-[0_0_15px_rgba(139,30,63,0.2)]">
+          <h2 className="text-2xl font-semibold mb-6 text-center shimmering-text">
             Your Chances of Success
           </h2>
           
@@ -199,16 +199,16 @@ const ResultPage = () => {
                 />
                 <defs>
                   <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#9EC6B8" />
-                    <stop offset="100%" stopColor="#7D91A6" />
+                    <stop offset="0%" stopColor="#8B1E3F" />
+                    <stop offset="100%" stopColor="#00274C" />
                   </linearGradient>
                 </defs>
               </svg>
-              <span className="text-3xl font-bold text-custom-text-primary">{evaluationResult.score}%</span>
+              <span className="text-3xl font-bold text-custom-tertiary-accent">{evaluationResult.score}%</span>
             </div>
           </div>
           
-          <h2 className="text-2xl font-semibold mb-4 bg-gradient-to-r from-custom-primary-accent to-custom-secondary-accent bg-clip-text text-transparent">
+          <h2 className="text-2xl font-semibold mb-4 shimmering-text">
             Overview
           </h2>
           
@@ -217,8 +217,8 @@ const ResultPage = () => {
           </div>
         </div>
         
-        <div className="glass-container flex flex-col h-full bg-custom-card border-custom-border">
-          <h2 className="text-2xl font-semibold mb-6 text-center bg-gradient-to-r from-custom-primary-accent to-custom-secondary-accent bg-clip-text text-transparent">
+        <div className="glass-container flex flex-col h-full bg-custom-card border-custom-primary-accent/30 shadow-[0_0_15px_rgba(139,30,63,0.2)]">
+          <h2 className="text-2xl font-semibold mb-6 text-center shimmering-text">
             Chat with Us
           </h2>
           
@@ -228,8 +228,8 @@ const ResultPage = () => {
                 key={index} 
                 className={`p-3 rounded-lg max-w-[85%] ${
                   message.sender === 'AI' 
-                    ? 'bg-custom-primary-accent/30 mr-auto' 
-                    : 'bg-custom-card ml-auto border border-custom-border'
+                    ? 'bg-custom-primary-accent/20 mr-auto' 
+                    : 'bg-custom-secondary-accent/20 ml-auto border border-custom-border'
                 }`}
               >
                 <p className="text-xs text-custom-text-secondary mb-1">{message.sender}</p>
@@ -238,12 +238,12 @@ const ResultPage = () => {
             ))}
             
             {isLoading && (
-              <div className="bg-custom-primary-accent/30 p-3 rounded-lg max-w-[85%] mr-auto">
+              <div className="bg-custom-primary-accent/20 p-3 rounded-lg max-w-[85%] mr-auto">
                 <p className="text-xs text-custom-text-secondary mb-1">AI</p>
                 <div className="flex space-x-2">
-                  <div className="h-2 w-2 bg-custom-text-secondary rounded-full animate-pulse"></div>
-                  <div className="h-2 w-2 bg-custom-text-secondary rounded-full animate-pulse delay-100"></div>
-                  <div className="h-2 w-2 bg-custom-text-secondary rounded-full animate-pulse delay-200"></div>
+                  <div className="h-2 w-2 bg-custom-tertiary-accent rounded-full animate-pulse"></div>
+                  <div className="h-2 w-2 bg-custom-tertiary-accent rounded-full animate-pulse delay-100"></div>
+                  <div className="h-2 w-2 bg-custom-tertiary-accent rounded-full animate-pulse delay-200"></div>
                 </div>
               </div>
             )}
@@ -264,9 +264,9 @@ const ResultPage = () => {
             <Button
               onClick={sendMessage}
               disabled={isLoading || !currentMessage.trim()}
-              className="gradient-btn p-3 h-auto"
+              className="gold-gradient-btn p-3 h-auto"
             >
-              <SendHorizontal size={20} />
+              <SendHorizontal size={20} className="text-custom-secondary-accent" />
             </Button>
           </div>
         </div>

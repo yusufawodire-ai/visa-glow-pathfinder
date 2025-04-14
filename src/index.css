@@ -54,6 +54,10 @@
     @apply bg-gradient-to-r from-custom-primary-accent to-custom-secondary-accent hover:scale-105 transition-transform duration-300 text-custom-text-primary font-semibold rounded-lg px-6 py-3 animate-pulse-glow;
   }
   
+  .gold-gradient-btn {
+    @apply bg-gradient-to-r from-custom-tertiary-accent to-yellow-500 text-custom-secondary-accent font-bold hover:scale-105 transition-transform duration-300 rounded-lg px-6 py-3 animate-pulse-glow shadow-lg;
+  }
+  
   .form-container {
     @apply bg-custom-card rounded-xl p-6 md:p-8 shadow-lg border border-custom-border;
   }
@@ -68,6 +72,10 @@
   
   .file-upload-area {
     @apply border-2 border-dashed border-custom-border rounded-lg p-8 flex flex-col items-center justify-center text-center cursor-pointer bg-custom-card/50 hover:bg-custom-card/80 transition-colors;
+  }
+
+  .shimmering-text {
+    @apply bg-gradient-to-r from-custom-primary-accent via-custom-tertiary-accent to-custom-secondary-accent bg-clip-text text-transparent bg-[length:200%_auto] animate-shine;
   }
 }
 
