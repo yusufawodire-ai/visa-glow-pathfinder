@@ -51,7 +51,7 @@
 
 @layer components {
   .gradient-btn {
-    @apply bg-gradient-to-r from-visa-blue to-visa-bright-blue text-white hover:scale-105 transition-transform duration-300 font-semibold rounded-lg px-6 py-3 shadow-lg;
+    @apply bg-visa-gold text-black hover:scale-105 transition-transform duration-300 font-semibold rounded-lg px-6 py-3 shadow-lg;
   }
   
   .form-container {
@@ -96,6 +96,10 @@
   
   .brown-gradient {
     @apply bg-gradient-to-b from-visa-light-brown to-visa-deep-brown relative overflow-hidden;
+  }
+  
+  .dark-gradient {
+    @apply bg-gradient-to-b from-[#1a1209] to-[#0c0a04] relative overflow-hidden;
   }
 }
 

@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -56,17 +57,17 @@ export default {
           foreground: "hsl(var(--card-foreground))"
         },
         visa: {
-          "background": "#FFFFFF",
+          "background": "#1a1209", // Dark brown background
           "dark-gray": "#1E2A44",
           "lilac": "#6A4E7F",
           "light-lilac": "#A78BFA",
           "burgundy": "#842A4A",
           "navy": "#092145",
-          "gold": "#EBC250",
+          "gold": "#EBC250", // Gold color for buttons/highlights
           "blue": "#0066FF",
           "bright-blue": "#00C2FF",
           "light-brown": "#e2d1c3",
-          "deep-brown": "#8a6d5c",
+          "deep-brown": "#32281E", // Darker brown
         }
       },
       borderRadius: {
@@ -85,10 +86,10 @@ export default {
         },
         "pulse-glow": {
           "0%, 100%": { 
-            boxShadow: "0 0 10px 2px rgba(0, 102, 255, 0.4), 0 0 20px 4px rgba(0, 194, 255, 0.2)"
+            boxShadow: "0 0 10px 2px rgba(235, 194, 80, 0.4), 0 0 20px 4px rgba(235, 194, 80, 0.2)"
           },
           "50%": { 
-            boxShadow: "0 0 15px 3px rgba(0, 102, 255, 0.6), 0 0 30px 6px rgba(0, 194, 255, 0.3)" 
+            boxShadow: "0 0 15px 3px rgba(235, 194, 80, 0.6), 0 0 30px 6px rgba(235, 194, 80, 0.3)" 
           }
         },
         "float": {

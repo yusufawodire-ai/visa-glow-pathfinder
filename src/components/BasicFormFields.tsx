@@ -92,7 +92,7 @@ const BasicFormFields: React.FC<FormFieldsProps> = ({
               {visaTypes.map((type) => (
                 <div
                   key={type}
-                  className="px-4 py-3 hover:bg-visa-lilac/20 cursor-pointer transition-colors duration-200"
+                  className="px-4 py-3 text-white hover:bg-visa-lilac/20 cursor-pointer transition-colors duration-200"
                   onClick={() => {
                     setVisaType(type);
                     setDropdownOpen(false);
@@ -124,7 +124,7 @@ const BasicFormFields: React.FC<FormFieldsProps> = ({
           />
           <LinkIcon size={18} className="absolute left-3 top-3.5 text-gray-400" />
         </div>
-        <p className="text-sm text-gray-400 mt-1">Add LinkedIn profile, professional website, portfolios, or press coverage</p>
+        <p className="text-sm text-white mt-1">Add LinkedIn profile, professional website, portfolios, or press coverage</p>
       </div>
     </>
   );
