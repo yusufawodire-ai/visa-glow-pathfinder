@@ -121,16 +121,24 @@ const InputPage = () => {
 
   return (
     <div className="min-h-screen py-8 px-4 md:px-8 bg-gradient-to-b from-visa-background to-visa-dark-gray/80">
-      <Button
-        onClick={() => navigate('/')}
-        className="mb-8 bg-visa-dark-gray hover:bg-visa-dark-gray/80 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-visa-light-lilac/30 animate-pulse-glow"
-      >
-        <Home size={20} />
-      </Button>
+      <div className="flex justify-between items-center mb-8">
+        <Button
+          onClick={() => navigate('/')}
+          className="bg-visa-dark-gray hover:bg-visa-dark-gray/80 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-visa-light-lilac/30 animate-pulse-glow"
+        >
+          <Home size={20} />
+        </Button>
+        
+        <img 
+          src="/lovable-uploads/659255b7-8321-4cb4-ba30-23527ef785e9.png" 
+          alt="Sherrod Sports Visas" 
+          className="h-20 w-auto"
+        />
+      </div>
       
       <div className="max-w-4xl mx-auto">
         <div className="form-container border border-visa-lilac/30 animate-pulse-glow backdrop-blur-sm">
-          <h1 className="text-2xl md:text-3xl font-semibold mb-2 text-center bg-gradient-to-r from-visa-lilac to-visa-light-lilac bg-clip-text text-transparent">Global Talent Visa Assessment</h1>
+          <h1 className="text-2xl md:text-3xl font-semibold mb-2 text-center bg-gradient-to-r from-visa-burgundy to-visa-gold bg-clip-text text-transparent">Sports Visa Assessment</h1>
           <p className="text-gray-300 text-center mb-8 max-w-2xl mx-auto">Upload your documents and get a detailed evaluation of your visa eligibility with personalized recommendations.</p>
           
           <form onSubmit={handleSubmit} className="space-y-6">

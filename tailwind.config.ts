@@ -61,6 +61,9 @@ export default {
           "dark-gray": "#1E2A44",
           "lilac": "#6A4E7F",
           "light-lilac": "#A78BFA",
+          "burgundy": "#842A4A",
+          "navy": "#092145",
+          "gold": "#EBC250",
         }
       },
       borderRadius: {

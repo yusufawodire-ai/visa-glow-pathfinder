@@ -152,16 +152,24 @@ const ResultPage = () => {
 
   return (
     <div className="min-h-screen py-8 px-4 md:px-8">
-      <Button
-        onClick={() => navigate('/')}
-        className="mb-8 bg-visa-dark-gray hover:bg-visa-dark-gray/80 rounded-full w-10 h-10 p-0 flex items-center justify-center"
-      >
-        <Home size={20} />
-      </Button>
+      <div className="flex justify-between items-center mb-8">
+        <Button
+          onClick={() => navigate('/')}
+          className="bg-visa-dark-gray hover:bg-visa-dark-gray/80 rounded-full w-10 h-10 p-0 flex items-center justify-center"
+        >
+          <Home size={20} />
+        </Button>
+        
+        <img 
+          src="/lovable-uploads/659255b7-8321-4cb4-ba30-23527ef785e9.png" 
+          alt="Sherrod Sports Visas" 
+          className="h-20 w-auto"
+        />
+      </div>
       
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="glass-container flex flex-col h-full">
-          <h2 className="text-2xl font-semibold mb-6 text-center bg-gradient-to-r from-visa-lilac to-visa-light-lilac bg-clip-text text-transparent">
+          <h2 className="text-2xl font-semibold mb-6 text-center bg-gradient-to-r from-visa-burgundy to-visa-gold bg-clip-text text-transparent">
             Your Chances of Success
           </h2>
           
@@ -190,8 +198,8 @@ const ResultPage = () => {
                 />
                 <defs>
                   <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#6A4E7F" />
-                    <stop offset="100%" stopColor="#A78BFA" />
+                    <stop offset="0%" stopColor="#842A4A" />
+                    <stop offset="100%" stopColor="#EBC250" />
                   </linearGradient>
                 </defs>
               </svg>
@@ -199,7 +207,7 @@ const ResultPage = () => {
             </div>
           </div>
           
-          <h2 className="text-2xl font-semibold mb-4 bg-gradient-to-r from-visa-lilac to-visa-light-lilac bg-clip-text text-transparent">
+          <h2 className="text-2xl font-semibold mb-4 bg-gradient-to-r from-visa-burgundy to-visa-gold bg-clip-text text-transparent">
             Overview
           </h2>
           
@@ -209,7 +217,7 @@ const ResultPage = () => {
         </div>
         
         <div className="glass-container flex flex-col h-full">
-          <h2 className="text-2xl font-semibold mb-6 text-center bg-gradient-to-r from-visa-lilac to-visa-light-lilac bg-clip-text text-transparent">
+          <h2 className="text-2xl font-semibold mb-6 text-center bg-gradient-to-r from-visa-burgundy to-visa-gold bg-clip-text text-transparent">
             Chat with Us
           </h2>
           
@@ -219,7 +227,7 @@ const ResultPage = () => {
                 key={index} 
                 className={`p-3 rounded-lg max-w-[85%] ${
                   message.sender === 'AI' 
-                    ? 'bg-visa-lilac/30 mr-auto' 
+                    ? 'bg-visa-burgundy/30 mr-auto' 
                     : 'bg-visa-dark-gray ml-auto'
                 }`}
               >
@@ -229,7 +237,7 @@ const ResultPage = () => {
             ))}
             
             {isLoading && (
-              <div className="bg-visa-lilac/30 p-3 rounded-lg max-w-[85%] mr-auto">
+              <div className="bg-visa-burgundy/30 p-3 rounded-lg max-w-[85%] mr-auto">
                 <p className="text-xs text-gray-400 mb-1">AI</p>
                 <div className="flex space-x-2">
                   <div className="h-2 w-2 bg-gray-400 rounded-full animate-pulse"></div>
@@ -255,9 +263,9 @@ const ResultPage = () => {
             <Button
               onClick={sendMessage}
               disabled={isLoading || !currentMessage.trim()}
-              className="gradient-btn p-3 h-auto"
+              className="bg-visa-dark-gray hover:bg-visa-dark-gray/80 p-3 h-auto"
             >
-              <SendHorizontal size={20} />
+              <SendHorizontal size={20} className="text-visa-gold" />
             </Button>
           </div>
         </div>
