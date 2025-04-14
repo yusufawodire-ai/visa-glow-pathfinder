@@ -144,45 +144,36 @@ const ResultPage = () => {
 
   if (!evaluationResult) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-custom-background">
-        <Loader2 size={48} className="animate-spin text-custom-primary-accent" />
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 size={48} className="animate-spin text-visa-light-lilac" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen py-8 px-4 md:px-8 bg-custom-background">
-      <div className="flex justify-between items-center mb-8">
-        <Button
-          onClick={() => navigate('/')}
-          className="bg-custom-card hover:bg-custom-card/80 rounded-full w-10 h-10 p-0 flex items-center justify-center border border-custom-border light-glow"
-        >
-          <Home size={20} />
-        </Button>
-        
-        <img 
-          src="/lovable-uploads/69f314e1-76ae-4ee9-bae8-4c284b46919d.png" 
-          alt="Sherrod Sports Visas" 
-          className="h-12 md:h-16"
-        />
-      </div>
+    <div className="min-h-screen py-8 px-4 md:px-8">
+      <Button
+        onClick={() => navigate('/')}
+        className="mb-8 bg-visa-dark-gray hover:bg-visa-dark-gray/80 rounded-full w-10 h-10 p-0 flex items-center justify-center"
+      >
+        <Home size={20} />
+      </Button>
       
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="enhanced-glass flex flex-col h-full bg-custom-card/30 border-custom-primary-accent/30 shadow-[0_0_15px_rgba(139,30,63,0.2)]">
-          <h2 className="text-2xl font-semibold mb-6 text-center soft-white-glow">
+        <div className="glass-container flex flex-col h-full">
+          <h2 className="text-2xl font-semibold mb-6 text-center bg-gradient-to-r from-visa-lilac to-visa-light-lilac bg-clip-text text-transparent">
             Your Chances of Success
           </h2>
           
           <div className="flex justify-center mb-8">
-            <div className="relative h-40 w-40 flex items-center justify-center active-gradient-circle">
+            <div className="relative h-40 w-40 flex items-center justify-center">
               <svg className="absolute inset-0" viewBox="0 0 100 100">
                 <circle
                   cx="50"
                   cy="50"
                   r="45"
                   fill="none"
-                  stroke={evaluationResult.score >= 70 ? "#4AFFB2" : evaluationResult.score >= 50 ? "#FFD580" : "#FF719A"}
-                  strokeOpacity="0.2"
+                  stroke="rgba(106, 78, 127, 0.2)"
                   strokeWidth="6"
                 />
                 <circle
@@ -195,30 +186,30 @@ const ResultPage = () => {
                   strokeDasharray={`${2 * Math.PI * 45 * evaluationResult.score / 100} ${2 * Math.PI * 45 * (1 - evaluationResult.score / 100)}`}
                   strokeDashoffset={2 * Math.PI * 45 * 0.25}
                   strokeLinecap="round"
-                  className="animate-pulse-strong"
+                  className="animate-pulse-glow"
                 />
                 <defs>
                   <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#9EC6B8" />
-                    <stop offset="100%" stopColor="#7D91A6" />
+                    <stop offset="0%" stopColor="#6A4E7F" />
+                    <stop offset="100%" stopColor="#A78BFA" />
                   </linearGradient>
                 </defs>
               </svg>
-              <span className="text-3xl font-bold text-custom-tertiary-accent">{evaluationResult.score}%</span>
+              <span className="text-3xl font-bold">{evaluationResult.score}%</span>
             </div>
           </div>
           
-          <h2 className="text-2xl font-semibold mb-4 soft-white-glow">
+          <h2 className="text-2xl font-semibold mb-4 bg-gradient-to-r from-visa-lilac to-visa-light-lilac bg-clip-text text-transparent">
             Overview
           </h2>
           
           <div className="prose prose-invert flex-grow overflow-auto">
-            <p className="text-white whitespace-pre-line">{evaluationResult.overview}</p>
+            <p className="text-gray-300 whitespace-pre-line">{evaluationResult.overview}</p>
           </div>
         </div>
         
-        <div className="enhanced-glass flex flex-col h-full bg-custom-card/30 border-custom-primary-accent/30 shadow-[0_0_15px_rgba(139,30,63,0.2)]">
-          <h2 className="text-2xl font-semibold mb-6 text-center soft-white-glow">
+        <div className="glass-container flex flex-col h-full">
+          <h2 className="text-2xl font-semibold mb-6 text-center bg-gradient-to-r from-visa-lilac to-visa-light-lilac bg-clip-text text-transparent">
             Chat with Us
           </h2>
           
@@ -228,22 +219,22 @@ const ResultPage = () => {
                 key={index} 
                 className={`p-3 rounded-lg max-w-[85%] ${
                   message.sender === 'AI' 
-                    ? 'bg-custom-primary-accent/20 mr-auto' 
-                    : 'bg-custom-secondary-accent/20 ml-auto border border-custom-border'
+                    ? 'bg-visa-lilac/30 mr-auto' 
+                    : 'bg-visa-dark-gray ml-auto'
                 }`}
               >
-                <p className="text-xs text-custom-text-secondary mb-1">{message.sender}</p>
-                <p className="whitespace-pre-line text-custom-text-primary">{message.message}</p>
+                <p className="text-xs text-gray-400 mb-1">{message.sender}</p>
+                <p className="whitespace-pre-line">{message.message}</p>
               </div>
             ))}
             
             {isLoading && (
-              <div className="bg-custom-primary-accent/20 p-3 rounded-lg max-w-[85%] mr-auto">
-                <p className="text-xs text-custom-text-secondary mb-1">AI</p>
+              <div className="bg-visa-lilac/30 p-3 rounded-lg max-w-[85%] mr-auto">
+                <p className="text-xs text-gray-400 mb-1">AI</p>
                 <div className="flex space-x-2">
-                  <div className="h-2 w-2 bg-custom-tertiary-accent rounded-full animate-pulse"></div>
-                  <div className="h-2 w-2 bg-custom-tertiary-accent rounded-full animate-pulse delay-100"></div>
-                  <div className="h-2 w-2 bg-custom-tertiary-accent rounded-full animate-pulse delay-200"></div>
+                  <div className="h-2 w-2 bg-gray-400 rounded-full animate-pulse"></div>
+                  <div className="h-2 w-2 bg-gray-400 rounded-full animate-pulse delay-100"></div>
+                  <div className="h-2 w-2 bg-gray-400 rounded-full animate-pulse delay-200"></div>
                 </div>
               </div>
             )}
@@ -264,9 +255,9 @@ const ResultPage = () => {
             <Button
               onClick={sendMessage}
               disabled={isLoading || !currentMessage.trim()}
-              className="gold-gradient-btn p-3 h-auto animate-home-pulse"
+              className="gradient-btn p-3 h-auto"
             >
-              <SendHorizontal size={20} className="text-custom-secondary-accent" />
+              <SendHorizontal size={20} />
             </Button>
           </div>
         </div>

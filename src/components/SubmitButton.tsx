@@ -12,17 +12,17 @@ const SubmitButton: React.FC<SubmitButtonProps> = ({ isLoading }) => {
       <button
         type="submit"
         disabled={isLoading}
-        className="gold-gradient-btn flex items-center justify-center min-w-[220px] group animate-home-pulse"
+        className="gradient-btn flex items-center justify-center min-w-[220px] group"
       >
         {isLoading ? (
           <>
-            <Loader2 size={20} className="mr-2 animate-spin text-custom-secondary-accent" />
+            <Loader2 size={20} className="mr-2 animate-spin" />
             Processing...
           </>
         ) : (
           <>
             Submit for Evaluation
-            <svg className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform text-custom-secondary-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
             </svg>
           </>
