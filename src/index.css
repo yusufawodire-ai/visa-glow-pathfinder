@@ -44,30 +44,30 @@
     @apply border-border;
   }
   body {
-    @apply bg-visa-background text-white font-poppins;
+    @apply bg-custom-background text-custom-text-primary font-poppins;
     font-family: 'Poppins', sans-serif;
   }
 }
 
 @layer components {
   .gradient-btn {
-    @apply bg-gradient-to-r from-visa-lilac to-visa-light-lilac hover:scale-105 transition-transform duration-300 text-white font-semibold rounded-lg px-6 py-3 animate-pulse-glow;
+    @apply bg-gradient-to-r from-custom-primary-accent to-custom-secondary-accent hover:scale-105 transition-transform duration-300 text-custom-text-primary font-semibold rounded-lg px-6 py-3 animate-pulse-glow;
   }
   
   .form-container {
-    @apply bg-visa-dark-gray/90 rounded-xl p-6 md:p-8 shadow-lg;
+    @apply bg-custom-card rounded-xl p-6 md:p-8 shadow-lg border border-custom-border;
   }
   
   .glass-container {
-    @apply bg-opacity-10 bg-visa-lilac backdrop-blur-md border border-visa-lilac/20 rounded-xl p-6 md:p-8 shadow-lg;
+    @apply bg-opacity-10 bg-custom-primary-accent backdrop-blur-md border border-custom-border rounded-xl p-6 md:p-8 shadow-lg;
   }
   
   .input-field {
-    @apply bg-visa-dark-gray border border-visa-lilac/30 rounded-lg px-4 py-3 text-white placeholder:text-gray-400 w-full focus:outline-none focus:ring-2 focus:ring-visa-light-lilac;
+    @apply bg-custom-card border border-custom-border rounded-lg px-4 py-3 text-custom-text-primary placeholder:text-custom-text-secondary w-full focus:outline-none focus:ring-2 focus:ring-custom-primary-accent;
   }
   
   .file-upload-area {
-    @apply border-2 border-dashed border-blue-400 rounded-lg p-8 flex flex-col items-center justify-center text-center cursor-pointer bg-visa-dark-gray/50 hover:bg-visa-dark-gray/80 transition-colors;
+    @apply border-2 border-dashed border-custom-border rounded-lg p-8 flex flex-col items-center justify-center text-center cursor-pointer bg-custom-card/50 hover:bg-custom-card/80 transition-colors;
   }
 }
 

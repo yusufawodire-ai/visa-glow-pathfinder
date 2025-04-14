@@ -56,11 +56,17 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))"
         },
-        visa: {
-          "background": "#010922",
-          "dark-gray": "#1E2A44",
-          "lilac": "#6A4E7F",
-          "light-lilac": "#A78BFA",
+        // Custom colors as requested
+        custom: {
+          "background": "#111111",
+          "card": "#1A1A1A",
+          "primary-accent": "#9EC6B8",
+          "secondary-accent": "#7D91A6",
+          "text-primary": "#F2F2F2",
+          "text-secondary": "#B3B3B3",
+          "border": "#2D2D2D",
+          "warning": "#FFD580",
+          "success": "#4AFFB2",
         }
       },
       borderRadius: {
@@ -79,10 +85,10 @@ export default {
         },
         "pulse-glow": {
           "0%, 100%": { 
-            boxShadow: "0 0 10px 2px rgba(167, 139, 250, 0.4), 0 0 20px 4px rgba(106, 78, 127, 0.2)"
+            boxShadow: "0 0 10px 2px rgba(158, 198, 184, 0.4), 0 0 20px 4px rgba(125, 145, 166, 0.2)"
           },
           "50%": { 
-            boxShadow: "0 0 15px 3px rgba(167, 139, 250, 0.6), 0 0 30px 6px rgba(106, 78, 127, 0.3)" 
+            boxShadow: "0 0 15px 3px rgba(158, 198, 184, 0.6), 0 0 30px 6px rgba(125, 145, 166, 0.3)" 
           }
         },
         "float": {
@@ -107,7 +113,8 @@ export default {
         "shimmer": "shimmer 2s linear infinite"
       },
       backgroundImage: {
-        "gradient-shimmer": "linear-gradient(90deg, transparent, rgba(167, 139, 250, 0.2), transparent)",
+        "gradient-shimmer": "linear-gradient(90deg, transparent, rgba(158, 198, 184, 0.2), transparent)",
+        "gradient-score": "linear-gradient(90deg, #9EC6B8, #7D91A6)",
       }
     }
   },
