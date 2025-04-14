@@ -232,11 +232,11 @@ const ResultPage = () => {
             <Button
               onClick={sendMessage}
               disabled={isLoading || !currentMessage.trim()}
-              className="bg-white hover:bg-white/90 text-black font-medium px-4 py-2 rounded-lg transition-all duration-300 group flex items-center animate-pulse-glow shadow-xl"
+              className="bg-black text-white hover:bg-gray-900 font-medium px-4 py-2 rounded-lg transition-all duration-300 group flex items-center animate-pulse-glow shadow-xl"
             >
               <SendHorizontal 
                 size={20} 
-                className="mr-2 group-hover:translate-x-1 transition-transform text-black" 
+                className="mr-2 group-hover:translate-x-1 transition-transform text-white" 
               />
               Send
             </Button>
