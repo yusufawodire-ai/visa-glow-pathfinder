@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Home, SendHorizontal, Loader2 } from 'lucide-react';
@@ -233,11 +232,11 @@ const ResultPage = () => {
             <Button
               onClick={sendMessage}
               disabled={isLoading || !currentMessage.trim()}
-              className="bg-visa-gold hover:bg-visa-bright-blue text-black font-medium px-4 py-2 rounded-lg transition-all duration-300 group flex items-center"
+              className="bg-white hover:bg-white/90 text-black font-medium px-4 py-2 rounded-lg transition-all duration-300 group flex items-center animate-pulse-glow shadow-xl"
             >
               <SendHorizontal 
                 size={20} 
-                className="mr-2 group-hover:translate-x-1 transition-transform" 
+                className="mr-2 group-hover:translate-x-1 transition-transform text-black" 
               />
               Send
             </Button>
