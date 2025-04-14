@@ -8,12 +8,12 @@ const Index = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 md:p-8 bg-[#1a1209] relative overflow-hidden">
-      {/* Logo at top right with soft glowing white background */}
-      <div className="absolute top-4 right-4 md:top-8 md:right-8 p-3 rounded-full bg-white/10 backdrop-blur-sm shadow-[0_0_15px_rgba(255,255,255,0.3)]">
+      {/* Logo at top right with soft glow */}
+      <div className="absolute top-4 right-4 md:top-8 md:right-8">
         <img 
           src="/lovable-uploads/659255b7-8321-4cb4-ba30-23527ef785e9.png" 
           alt="Sherrod Sports Visas" 
-          className="w-32 md:w-40 h-auto"
+          className="w-32 md:w-40 h-auto animate-pulse-glow" 
         />
       </div>
       
