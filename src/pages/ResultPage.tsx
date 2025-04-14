@@ -144,20 +144,20 @@ const ResultPage = () => {
 
   if (!evaluationResult) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-visa-dark-gray">
         <Loader2 size={48} className="animate-spin text-visa-light-lilac" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen py-8 px-4 md:px-8">
+    <div className="min-h-screen py-8 px-4 md:px-8 bg-visa-dark-gray">
       <div className="flex justify-between items-center mb-8">
         <Button
           onClick={() => navigate('/')}
-          className="bg-visa-dark-gray hover:bg-visa-dark-gray/80 rounded-full w-10 h-10 p-0 flex items-center justify-center"
+          className="bg-visa-navy hover:bg-visa-navy/80 rounded-full w-10 h-10 p-0 flex items-center justify-center"
         >
-          <Home size={20} />
+          <Home size={20} className="text-white" />
         </Button>
         
         <img 
@@ -169,7 +169,7 @@ const ResultPage = () => {
       
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="glass-container flex flex-col h-full">
-          <h2 className="text-2xl font-semibold mb-6 text-center bg-gradient-to-r from-visa-burgundy to-visa-gold bg-clip-text text-transparent">
+          <h2 className="text-2xl font-semibold mb-6 text-center bg-gradient-to-r from-visa-gold to-white bg-clip-text text-transparent">
             Your Chances of Success
           </h2>
           
@@ -198,26 +198,26 @@ const ResultPage = () => {
                 />
                 <defs>
                   <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#842A4A" />
-                    <stop offset="100%" stopColor="#EBC250" />
+                    <stop offset="0%" stopColor="#EBC250" />
+                    <stop offset="100%" stopColor="#FFFFFF" />
                   </linearGradient>
                 </defs>
               </svg>
-              <span className="text-3xl font-bold">{evaluationResult.score}%</span>
+              <span className="text-3xl font-bold text-white">{evaluationResult.score}%</span>
             </div>
           </div>
           
-          <h2 className="text-2xl font-semibold mb-4 bg-gradient-to-r from-visa-burgundy to-visa-gold bg-clip-text text-transparent">
+          <h2 className="text-2xl font-semibold mb-4 bg-gradient-to-r from-visa-gold to-white bg-clip-text text-transparent">
             Overview
           </h2>
           
           <div className="prose prose-invert flex-grow overflow-auto">
-            <p className="text-gray-300 whitespace-pre-line">{evaluationResult.overview}</p>
+            <p className="text-white whitespace-pre-line">{evaluationResult.overview}</p>
           </div>
         </div>
         
         <div className="glass-container flex flex-col h-full">
-          <h2 className="text-2xl font-semibold mb-6 text-center bg-gradient-to-r from-visa-burgundy to-visa-gold bg-clip-text text-transparent">
+          <h2 className="text-2xl font-semibold mb-6 text-center bg-gradient-to-r from-visa-gold to-white bg-clip-text text-transparent">
             Chat with Us
           </h2>
           
@@ -227,22 +227,22 @@ const ResultPage = () => {
                 key={index} 
                 className={`p-3 rounded-lg max-w-[85%] ${
                   message.sender === 'AI' 
-                    ? 'bg-visa-burgundy/30 mr-auto' 
-                    : 'bg-visa-dark-gray ml-auto'
+                    ? 'bg-visa-navy/60 mr-auto' 
+                    : 'bg-visa-burgundy/60 ml-auto'
                 }`}
               >
-                <p className="text-xs text-gray-400 mb-1">{message.sender}</p>
-                <p className="whitespace-pre-line">{message.message}</p>
+                <p className="text-xs text-gray-300 mb-1">{message.sender}</p>
+                <p className="whitespace-pre-line text-white">{message.message}</p>
               </div>
             ))}
             
             {isLoading && (
-              <div className="bg-visa-burgundy/30 p-3 rounded-lg max-w-[85%] mr-auto">
-                <p className="text-xs text-gray-400 mb-1">AI</p>
+              <div className="bg-visa-navy/60 p-3 rounded-lg max-w-[85%] mr-auto">
+                <p className="text-xs text-gray-300 mb-1">AI</p>
                 <div className="flex space-x-2">
-                  <div className="h-2 w-2 bg-gray-400 rounded-full animate-pulse"></div>
-                  <div className="h-2 w-2 bg-gray-400 rounded-full animate-pulse delay-100"></div>
-                  <div className="h-2 w-2 bg-gray-400 rounded-full animate-pulse delay-200"></div>
+                  <div className="h-2 w-2 bg-gray-300 rounded-full animate-pulse"></div>
+                  <div className="h-2 w-2 bg-gray-300 rounded-full animate-pulse delay-100"></div>
+                  <div className="h-2 w-2 bg-gray-300 rounded-full animate-pulse delay-200"></div>
                 </div>
               </div>
             )}
@@ -263,7 +263,7 @@ const ResultPage = () => {
             <Button
               onClick={sendMessage}
               disabled={isLoading || !currentMessage.trim()}
-              className="bg-visa-dark-gray hover:bg-visa-dark-gray/80 p-3 h-auto"
+              className="bg-visa-navy hover:bg-visa-navy/80 p-3 h-auto"
             >
               <SendHorizontal size={20} className="text-visa-gold" />
             </Button>

@@ -93,6 +93,10 @@
     left: -20%;
     animation: pulse 8s ease-in-out 2s infinite alternate;
   }
+  
+  .brown-gradient {
+    @apply bg-gradient-to-b from-visa-light-brown to-visa-deep-brown relative overflow-hidden;
+  }
 }
 
 @keyframes pulse {
