@@ -1,8 +1,10 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Home, SendHorizontal, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface EvaluationResult {
   score: number;
@@ -190,34 +192,36 @@ const ResultPage = () => {
             Chat with Us
           </h2>
           
-          <div className="flex-grow overflow-auto mb-4 space-y-4">
-            {chatMessages.map((message, index) => (
-              <div 
-                key={index} 
-                className={`p-3 rounded-lg max-w-[85%] ${
-                  message.sender === 'AI' 
-                    ? 'bg-visa-navy/60 mr-auto' 
-                    : 'bg-visa-burgundy/60 ml-auto'
-                }`}
-              >
-                <p className="text-xs text-gray-300 mb-1">{message.sender}</p>
-                <p className="whitespace-pre-line text-white">{message.message}</p>
-              </div>
-            ))}
-            
-            {isLoading && (
-              <div className="bg-visa-navy/60 p-3 rounded-lg max-w-[85%] mr-auto">
-                <p className="text-xs text-gray-300 mb-1">AI</p>
-                <div className="flex space-x-2">
-                  <div className="h-2 w-2 bg-gray-300 rounded-full animate-pulse"></div>
-                  <div className="h-2 w-2 bg-gray-300 rounded-full animate-pulse delay-100"></div>
-                  <div className="h-2 w-2 bg-gray-300 rounded-full animate-pulse delay-200"></div>
+          <ScrollArea className="flex-grow mb-4 pr-4 h-[400px]">
+            <div className="space-y-4">
+              {chatMessages.map((message, index) => (
+                <div 
+                  key={index} 
+                  className={`p-3 rounded-lg max-w-[85%] ${
+                    message.sender === 'AI' 
+                      ? 'bg-visa-navy/60 mr-auto' 
+                      : 'bg-visa-burgundy/60 ml-auto'
+                  }`}
+                >
+                  <p className="text-xs text-gray-300 mb-1">{message.sender}</p>
+                  <p className="whitespace-pre-line text-white">{message.message}</p>
                 </div>
-              </div>
-            )}
-            
-            <div ref={chatEndRef} />
-          </div>
+              ))}
+              
+              {isLoading && (
+                <div className="bg-visa-navy/60 p-3 rounded-lg max-w-[85%] mr-auto">
+                  <p className="text-xs text-gray-300 mb-1">AI</p>
+                  <div className="flex space-x-2">
+                    <div className="h-2 w-2 bg-gray-300 rounded-full animate-pulse"></div>
+                    <div className="h-2 w-2 bg-gray-300 rounded-full animate-pulse delay-100"></div>
+                    <div className="h-2 w-2 bg-gray-300 rounded-full animate-pulse delay-200"></div>
+                  </div>
+                </div>
+              )}
+              
+              <div ref={chatEndRef} />
+            </div>
+          </ScrollArea>
           
           <div className="flex">
             <textarea
