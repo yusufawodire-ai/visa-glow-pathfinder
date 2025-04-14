@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Home, SendHorizontal, Loader2 } from 'lucide-react';
+import { Home, SendHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 
@@ -26,16 +25,13 @@ const ResultPage = () => {
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Get evaluation result from localStorage
     const storedResult = localStorage.getItem('evaluationResult');
     if (storedResult) {
       const result = JSON.parse(storedResult) as EvaluationResult;
       setEvaluationResult(result);
       
-      // Start a chat with the AI using the evaluation result as context
       startChat(result);
     } else {
-      // If no result is found, redirect to input page
       toast({
         title: "No evaluation found",
         description: "Please complete the evaluation form first.",
@@ -46,7 +42,6 @@ const ResultPage = () => {
   }, [navigate, toast]);
 
   useEffect(() => {
-    // Scroll to the bottom of the chat when new messages are added
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages]);
 
@@ -56,19 +51,6 @@ const ResultPage = () => {
     try {
       console.log('Starting chat with context', result);
       
-      // For demo purposes, simulate API call
-      // In a real implementation, use the actual webhook URL
-      // const response = await fetch('https://igta.app.n8n.cloud/webhook/START_CHAT_OUTPUT_WEBHOOK', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify({ context: result }),
-      // });
-      
-      // const data = await response.json();
-      
-      // Mock response for demonstration
       const initialMessage = `Hi! I'm here to help with your O-1A visa application. 👋 You scored a strong 78%, excelling in Recognized Prizes (20/25) and Published Material (18/25)—great job! But Membership in Recognized Associations is at 0/25 due to missing evidence. Want to improve this area or ask something else?`;
       
       setTimeout(() => {
@@ -98,20 +80,7 @@ const ResultPage = () => {
     try {
       console.log('Sending message', { sessionId, message: userMessage });
       
-      // For demo purposes, simulate API call
-      // In a real implementation, use the actual webhook URL
-      // const response = await fetch('https://igta.app.n8n.cloud/webhook/USER_MESSAGE_OUTPUT_WEBHOOK', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify({ sessionId, message: userMessage }),
-      // });
-      
-      // const data = await response.json();
-      
-      // Mock AI response for demonstration
-      let aiResponse = "I'll help you improve your Membership in Recognized Associations score! This category assesses your involvement in prestigious professional organizations. Here's what you can do:\n\n1. Join relevant professional associations in your field\n2. Submit proof of membership (certificates, membership cards)\n3. Highlight leadership roles or significant contributions\n4. Include evidence of selective admission processes\n5. Provide documentation of peer recognition within these organizations\n\nMemberships that require outstanding achievements for admission are particularly valuable. Would you like me to recommend specific associations in your industry?";
+      const aiResponse = "I'll help you improve your Membership in Recognized Associations score! This category assesses your involvement in prestigious professional organizations. Here's what you can do:\n\n1. Join relevant professional associations in your field\n2. Submit proof of membership (certificates, membership cards)\n3. Highlight leadership roles or significant contributions\n4. Include evidence of selective admission processes\n5. Provide documentation of peer recognition within these organizations\n\nMemberships that require outstanding achievements for admission are particularly valuable. Would you like me to recommend specific associations in your industry?";
       
       if (userMessage.toLowerCase().includes("thank")) {
         aiResponse = "You're welcome! I'm here to help with any other questions about your visa application. Feel free to ask about specific criteria, documentation needs, or next steps in the process.";
@@ -263,9 +232,13 @@ const ResultPage = () => {
             <Button
               onClick={sendMessage}
               disabled={isLoading || !currentMessage.trim()}
-              className="bg-visa-navy hover:bg-visa-navy/80 p-3 h-auto"
+              className="bg-visa-blue hover:bg-visa-bright-blue text-white px-4 py-2 rounded-lg transition-all duration-300 group flex items-center"
             >
-              <SendHorizontal size={20} className="text-visa-gold" />
+              <SendHorizontal 
+                size={20} 
+                className="mr-2 group-hover:translate-x-1 transition-transform" 
+              />
+              Send
             </Button>
           </div>
         </div>
