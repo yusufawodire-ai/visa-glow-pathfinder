@@ -44,14 +44,14 @@
     @apply border-border;
   }
   body {
-    @apply bg-visa-background text-white font-poppins;
+    @apply bg-visa-background text-visa-navy font-poppins;
     font-family: 'Poppins', sans-serif;
   }
 }
 
 @layer components {
   .gradient-btn {
-    @apply bg-gradient-to-r from-visa-burgundy to-visa-gold text-white hover:scale-105 transition-transform duration-300 font-semibold rounded-lg px-6 py-3 animate-pulse-glow;
+    @apply bg-gradient-to-r from-visa-blue to-visa-bright-blue text-white hover:scale-105 transition-transform duration-300 font-semibold rounded-lg px-6 py-3 shadow-lg;
   }
   
   .form-container {
@@ -69,6 +69,35 @@
   .file-upload-area {
     @apply border-2 border-dashed border-blue-400 rounded-lg p-8 flex flex-col items-center justify-center text-center cursor-pointer bg-visa-dark-gray/50 hover:bg-visa-dark-gray/80 transition-colors;
   }
+  
+  .blue-glow {
+    @apply relative z-10;
+  }
+  
+  .blue-glow::before {
+    content: '';
+    @apply absolute -z-10 rounded-full bg-visa-blue opacity-20 blur-3xl;
+    width: 50vw;
+    height: 50vw;
+    top: -10%;
+    right: -20%;
+    animation: pulse 8s ease-in-out infinite alternate;
+  }
+  
+  .blue-glow::after {
+    content: '';
+    @apply absolute -z-10 rounded-full bg-visa-bright-blue opacity-20 blur-3xl;
+    width: 50vw;
+    height: 50vw;
+    bottom: -10%;
+    left: -20%;
+    animation: pulse 8s ease-in-out 2s infinite alternate;
+  }
+}
+
+@keyframes pulse {
+  0% { opacity: 0.1; transform: scale(0.9); }
+  100% { opacity: 0.25; transform: scale(1.1); }
 }
 
 @keyframes fadeIn {
