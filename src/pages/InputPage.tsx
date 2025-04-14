@@ -67,11 +67,13 @@ const InputPage = () => {
     setIsLoading(true);
     
     try {
+      // Create FormData object to send files and form data
       const formData = new FormData();
       formData.append('name', name);
       formData.append('email', email);
       if (phone) formData.append('phoneNumber', phone);
       formData.append('visaType', visaType);
+      // Append each file separately
       files.forEach(file => formData.append('files', file));
       if (link) formData.append('link', link);
       
