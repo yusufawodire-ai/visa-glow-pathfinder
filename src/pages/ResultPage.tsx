@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Home, SendHorizontal, Loader2 } from 'lucide-react';
@@ -92,10 +91,15 @@ const ResultPage = () => {
       setIsLoading(false);
     } catch (error) {
       console.error('Error starting chat:', error);
+      
+      // Fallback to default initial message if webhook fails
+      const fallbackMessage = "Welcome to your visa evaluation results! I'm here to help you understand your score and provide guidance on improving your application. Feel free to ask me any questions about your evaluation or next steps.";
+      
+      setChatMessages([{ sender: 'AI', message: fallbackMessage }]);
       toast({
-        title: "Chat initialization failed",
-        description: "Could not connect to the chat service. Please try again.",
-        variant: "destructive",
+        title: "Using offline mode",
+        description: "Could not connect to the chat service. Limited functionality available.",
+        variant: "default",
       });
       setIsLoading(false);
     }
