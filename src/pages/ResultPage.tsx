@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Home, SendHorizontal, Loader2 } from 'lucide-react';
@@ -137,6 +138,8 @@ const ResultPage = () => {
       }
       
       let initialMessage;
+      
+      // Detect the location of the response in the JSON
       if (jsonResponse.response) {
         initialMessage = jsonResponse.response;
       } else if (jsonResponse.message) {
@@ -144,6 +147,7 @@ const ResultPage = () => {
       } else if (jsonResponse.data && jsonResponse.data.response) {
         initialMessage = jsonResponse.data.response;
       } else {
+        // Fallback if no specific response structure is found
         initialMessage = `Hi! I'm here to help with your ${result.score}% visa application. I've analyzed your documents and can provide guidance on improving your application. What would you like to know?`;
       }
       

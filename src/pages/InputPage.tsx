@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -79,7 +78,6 @@ const InputPage = () => {
       console.log('Submitting form data', { name, email, phone, visaType, filesCount: files.length, link });
       
       try {
-        // Send data to the webhook
         console.log('Sending data to webhook...');
         const response = await fetch('https://igta.app.n8n.cloud/webhook/DETAILS_SUBMISSION_WEBHOOK', {
           method: 'POST',
@@ -91,11 +89,9 @@ const InputPage = () => {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
         
-        // Get the raw text response and log it
         const rawResponse = await response.text();
         console.log('Raw webhook response:', rawResponse);
         
-        // Parse the JSON response
         let jsonResponse;
         try {
           jsonResponse = JSON.parse(rawResponse);
@@ -105,10 +101,8 @@ const InputPage = () => {
           throw new Error('Invalid JSON response from webhook');
         }
         
-        // Extract the evaluation result data from the response
         let evaluationResult: { score: number; overview: string };
         
-        // Check if the response contains the expected data
         if (jsonResponse.result && typeof jsonResponse.result === 'object' && 
             'score' in jsonResponse.result && 'overview' in jsonResponse.result) {
           evaluationResult = jsonResponse.result;
@@ -129,7 +123,6 @@ const InputPage = () => {
           throw new Error('Missing required fields in evaluation result');
         }
         
-        // Store the evaluation result in Supabase or local storage
         const storedResult = await storeEvaluationResult({
           name,
           email,
@@ -142,14 +135,12 @@ const InputPage = () => {
         
         console.log('Stored evaluation result:', storedResult);
         
-        // Pass evaluation result ID to result page
         let navigationData = {
           evaluationId: storedResult?.id,
           score: evaluationResult.score,
           overview: evaluationResult.overview
         };
         
-        // Navigate to the result page with the evaluation result
         sessionStorage.setItem('evaluationResult', JSON.stringify(navigationData));
         
         setIsLoading(false);
