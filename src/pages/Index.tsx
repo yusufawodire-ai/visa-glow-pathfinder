@@ -19,9 +19,9 @@ const Index = () => {
       
       {/* Content with glow effects similar to the reference image */}
       <div className="max-w-5xl w-full text-center space-y-12 z-10 mt-16">
-        <h1 className="text-4xl md:text-6xl lg:text-7xl font-semibold text-white tracking-tight">
-          <span className="block mb-2">Evaluate your</span>
-          <span className="text-visa-gold">Visa Eligibility</span>
+        <h1 className="text-4xl md:text-6xl lg:text-7xl font-semibold tracking-tight">
+          <span className="block mb-2 text-white">Evaluate your</span>
+          <span className="bg-gradient-to-r from-visa-gold via-amber-300 to-white bg-clip-text text-transparent animate-pulse-glow drop-shadow-[0_0_10px_rgba(235,194,80,0.5)]">Visa Eligibility</span>
         </h1>
         
         <p className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto">

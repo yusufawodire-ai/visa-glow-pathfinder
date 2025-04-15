@@ -37,7 +37,7 @@ export const submitEvaluationData = async (data: EvaluationResultData) => {
   
   console.log('Sending data to webhook...');
   try {
-    const response = await fetch('https://igta.app.n8n.cloud/webhook/DETAILS_SUBMISSION_WEBHOOK', {
+    const response = await fetch('https://igta.app.n8n.cloud/webhook-test/DETAILS_SUBMISSION_WEBHOOK', {
       method: 'POST',
       body: formData,
     });

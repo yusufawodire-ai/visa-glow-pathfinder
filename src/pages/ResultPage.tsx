@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Home, SendHorizontal, Loader2, AlertTriangle } from 'lucide-react';
@@ -118,7 +117,7 @@ const ResultPage = () => {
     try {
       console.log('Starting chat with context', result);
       
-      const response = await fetch('https://igta.app.n8n.cloud/webhook/START_CHAT_WEBHOOK', {
+      const response = await fetch('https://igta.app.n8n.cloud/webhook-test/START_CHAT_OUTPUT_WEBHOOK', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
