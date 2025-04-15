@@ -44,10 +44,6 @@ const InputPage = () => {
         link
       });
       
-      if (!result) {
-        throw new Error('No evaluation result returned');
-      }
-      
       sessionStorage.setItem('evaluationResult', JSON.stringify(result));
       
       setIsLoading(false);
@@ -59,23 +55,9 @@ const InputPage = () => {
       navigate('/result');
     } catch (error) {
       console.error('Error submitting form:', error);
-      
-      let errorMessage = 'There was an error submitting your information. Please try again.';
-      
-      if (error instanceof Error) {
-        // Provide more specific error messages based on the error
-        if (error.message.includes('Server returned error')) {
-          errorMessage = 'Server error occurred. Please try again later.';
-        } else if (error.message.includes('Invalid JSON')) {
-          errorMessage = 'The server returned an invalid response. Please try again.';
-        } else if (error.message.includes('Expected webhook response format')) {
-          errorMessage = 'Invalid response format from evaluation service. Please contact support.';
-        }
-      }
-      
       toast({
         title: "Submission failed",
-        description: errorMessage,
+        description: "There was an error submitting your information. Please try again.",
         variant: "destructive",
       });
       setIsLoading(false);
