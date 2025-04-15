@@ -15,11 +15,32 @@ export const fallbackData = {
 export const parseWebhookResponse = (jsonResponse: any) => {
   console.log('Parsing response:', jsonResponse);
   
-  // Handle array format [{ score: string|number, summary/overview: string }]
+  // Handle nested output object format { output: { score: string, overview: string } }
+  if (jsonResponse && typeof jsonResponse === 'object' && jsonResponse.output) {
+    console.log('Processing nested output response:', jsonResponse.output);
+    
+    if ('score' in jsonResponse.output && 'overview' in jsonResponse.output) {
+      return {
+        score: jsonResponse.output.score,
+        summary: jsonResponse.output.overview
+      };
+    }
+  }
+  
+  // Handle array format [{ output: { score: string, overview: string } }]
   if (Array.isArray(jsonResponse) && jsonResponse.length > 0) {
     const firstResult = jsonResponse[0];
     console.log('Processing array response, first item:', firstResult);
     
+    // Check for nested output object
+    if (firstResult.output && 'score' in firstResult.output && 'overview' in firstResult.output) {
+      return {
+        score: firstResult.output.score,
+        summary: firstResult.output.overview
+      };
+    }
+    
+    // Check for direct properties
     if ('score' in firstResult) {
       return {
         score: firstResult.score,
@@ -42,7 +63,7 @@ export const parseWebhookResponse = (jsonResponse: any) => {
   // Invalid format
   else {
     console.error('Invalid response structure:', jsonResponse);
-    throw new Error('Response does not match expected format { score: string|number, summary|overview: string }');
+    throw new Error('Response does not match expected format');
   }
 };
 
@@ -92,15 +113,17 @@ export const simulateWebhookResponse = (name: string, email: string, phone: stri
   
   const mockResponse = [
     {
-      score: "87%",
-      overview: `Your ${visaType} visa application shows strong potential with a score of 87%. Based on your submitted documents, you have exceptional qualifications in your field. We recommend proceeding with your application with confidence.`
+      output: {
+        score: "87%",
+        overview: `Your ${visaType} visa application shows strong potential with a score of 87%. Based on your submitted documents, you have exceptional qualifications in your field. We recommend proceeding with your application with confidence.`
+      }
     }
   ];
   
   return {
     evaluationId: "simulated-" + Math.random().toString(36).substring(2, 15),
-    score: mockResponse[0].score,
-    overview: mockResponse[0].overview
+    score: mockResponse[0].output.score,
+    overview: mockResponse[0].output.overview
   };
 };
 

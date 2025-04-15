@@ -99,7 +99,7 @@ async function processWebhookRequest(
     return createResultObject(
       storedResult?.id,
       evaluationResult.score,
-      evaluationResult.summary || evaluationResult.overview || ''
+      evaluationResult.summary || ''
     );
   } catch (error) {
     throw error; // Let the main function handle errors
