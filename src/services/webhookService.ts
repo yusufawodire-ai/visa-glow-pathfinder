@@ -11,8 +11,9 @@ export interface EvaluationResultData {
 }
 
 export interface WebhookResponse {
-  score: number;
-  overview: string;
+  score: string | number;
+  summary?: string;
+  overview?: string; // Keep for backward compatibility
 }
 
 export const submitEvaluationData = async (data: EvaluationResultData) => {
@@ -63,24 +64,39 @@ export const submitEvaluationData = async (data: EvaluationResultData) => {
     let evaluationResult: WebhookResponse;
     
     if (Array.isArray(jsonResponse) && jsonResponse.length > 0) {
-      // Handle array format [{ score: number, overview: string }]
+      // Handle array format [{ score: string|number, summary: string }]
       const firstResult = jsonResponse[0];
-      if ('score' in firstResult && 'overview' in firstResult) {
-        evaluationResult = firstResult;
+      if ('score' in firstResult && ('summary' in firstResult || 'overview' in firstResult)) {
+        evaluationResult = {
+          score: firstResult.score,
+          summary: firstResult.summary || firstResult.overview
+        };
       } else {
         throw new Error('Invalid response structure in array');
       }
-    } else if ('score' in jsonResponse && 'overview' in jsonResponse) {
-      // Handle direct object format { score: number, overview: string }
-      evaluationResult = jsonResponse;
+    } else if ('score' in jsonResponse && ('summary' in jsonResponse || 'overview' in jsonResponse)) {
+      // Handle direct object format { score: string|number, summary: string }
+      evaluationResult = {
+        score: jsonResponse.score,
+        summary: jsonResponse.summary || jsonResponse.overview
+      };
     } else {
       console.error('Invalid response structure:', jsonResponse);
-      throw new Error('Response does not match expected format { score: number, overview: string }');
+      throw new Error('Response does not match expected format { score: string|number, summary|overview: string }');
     }
     
     console.log('Extracted evaluation result:', evaluationResult);
     
-    if (typeof evaluationResult.score !== 'number' || typeof evaluationResult.overview !== 'string') {
+    // Convert score to number if it's a string with percentage
+    let scoreValue: number;
+    if (typeof evaluationResult.score === 'string') {
+      // Remove percentage sign and convert to number
+      scoreValue = parseFloat(evaluationResult.score.replace('%', ''));
+    } else {
+      scoreValue = evaluationResult.score as number;
+    }
+    
+    if (isNaN(scoreValue) || (!evaluationResult.summary && !evaluationResult.overview)) {
       console.error('Invalid types in evaluation result:', evaluationResult);
       throw new Error('Invalid data types in evaluation result');
     }
@@ -90,8 +106,8 @@ export const submitEvaluationData = async (data: EvaluationResultData) => {
       email,
       phone: phone || undefined,
       visa_type: visaType,
-      score: evaluationResult.score,
-      overview: evaluationResult.overview,
+      score: scoreValue,
+      overview: evaluationResult.summary || evaluationResult.overview || '',
       user_id: crypto.randomUUID(), // Generate a random ID for anonymous users
     });
     
@@ -100,7 +116,7 @@ export const submitEvaluationData = async (data: EvaluationResultData) => {
     return {
       evaluationId: storedResult?.id,
       score: evaluationResult.score,
-      overview: evaluationResult.overview
+      overview: evaluationResult.summary || evaluationResult.overview
     };
   } catch (error) {
     console.error('Error in submitEvaluationData:', error);

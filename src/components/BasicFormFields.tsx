@@ -28,8 +28,8 @@ const BasicFormFields: React.FC<FormFieldsProps> = ({
 }) => {
   const { toast } = useToast();
   
-  // List of specific visa types
-  const visaTypes = ["P-1", "O-1a", "O-1B", "EB1a", "O2", "P1s", "Eb2NIW", "b1", "B2"];
+  // Updated list of specific visa types
+  const visaTypes = ["P-1A", "P-1B", "O-1A", "O-1B", "EB-1A"];
   
   return (
     <>

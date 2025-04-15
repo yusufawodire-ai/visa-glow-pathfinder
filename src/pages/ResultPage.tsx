@@ -7,7 +7,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { getEvaluationResult } from '@/lib/supabase';
 
 interface EvaluationResult {
-  score: number;
+  score: string | number;
   overview: string;
   evaluationId?: string | number;
 }
@@ -321,7 +321,7 @@ const ResultPage = () => {
                     fill="none"
                     stroke="url(#gradient)"
                     strokeWidth="6"
-                    strokeDasharray={`${2 * Math.PI * 45 * (evaluationResult.score || 0) / 100} ${2 * Math.PI * 45 * (1 - (evaluationResult.score || 0) / 100)}`}
+                    strokeDasharray={`${2 * Math.PI * 45 * (parseFloat(evaluationResult.score.toString().replace('%', '')) / 100)} ${2 * Math.PI * 45 * (1 - (parseFloat(evaluationResult.score.toString().replace('%', '')) / 100))}`}
                     strokeDashoffset={2 * Math.PI * 45 * 0.25}
                     strokeLinecap="round"
                     className="animate-pulse-glow"
@@ -333,7 +333,7 @@ const ResultPage = () => {
                     </linearGradient>
                   </defs>
                 </svg>
-                <span className="text-3xl font-bold text-white">{evaluationResult.score}%</span>
+                <span className="text-3xl font-bold text-white">{typeof evaluationResult.score === 'string' ? evaluationResult.score : `${evaluationResult.score}%`}</span>
               </div>
             </div>
             
