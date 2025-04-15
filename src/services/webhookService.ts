@@ -44,10 +44,24 @@ export const submitEvaluationData = async (data: EvaluationResultData) => {
   
   console.log('Sending data to webhook...');
   try {
+    // For debugging on local env, you can uncomment this to skip the actual API call
+    // console.log('DEBUG MODE: Simulating webhook response');
+    // return simulateWebhookResponse(name, email, phone, visaType);
+    
+    // Add a timeout to the fetch call to prevent hanging indefinitely
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+    
+    console.log('Webhook URL:', 'https://igta.app.n8n.cloud/webhook-test/DETAILS_SUBMISSION_WEBHOOK');
     const response = await fetch('https://igta.app.n8n.cloud/webhook-test/DETAILS_SUBMISSION_WEBHOOK', {
       method: 'POST',
       body: formData,
+      signal: controller.signal
     });
+    
+    clearTimeout(timeoutId);
+    
+    console.log('Webhook response status:', response.status);
     
     if (!response.ok) {
       console.error(`HTTP error! Status: ${response.status}`);
@@ -121,34 +135,40 @@ export const submitEvaluationData = async (data: EvaluationResultData) => {
     if (Array.isArray(jsonResponse) && jsonResponse.length > 0) {
       // Handle array format [{ score: string|number, summary: string }]
       const firstResult = jsonResponse[0];
-      if ('score' in firstResult && ('summary' in firstResult || 'overview' in firstResult)) {
+      console.log('Processing array response, first item:', firstResult);
+      
+      if ('score' in firstResult) {
         evaluationResult = {
           score: firstResult.score,
-          summary: firstResult.summary || firstResult.overview
+          summary: firstResult.summary || firstResult.overview || ''
         };
+        console.log('Successfully extracted from array format:', evaluationResult);
       } else {
         console.error('Invalid response structure in array:', jsonResponse);
         throw new Error('Invalid response structure in array');
       }
-    } else if (jsonResponse && typeof jsonResponse === 'object' && 'score' in jsonResponse && 
-               ('summary' in jsonResponse || 'overview' in jsonResponse)) {
+    } else if (jsonResponse && typeof jsonResponse === 'object' && 'score' in jsonResponse) {
       // Handle direct object format { score: string|number, summary: string }
+      console.log('Processing object response:', jsonResponse);
+      
       evaluationResult = {
         score: jsonResponse.score,
-        summary: jsonResponse.summary || jsonResponse.overview
+        summary: jsonResponse.summary || jsonResponse.overview || ''
       };
+      console.log('Successfully extracted from object format:', evaluationResult);
     } else {
       console.error('Invalid response structure:', jsonResponse);
       throw new Error('Response does not match expected format { score: string|number, summary|overview: string }');
     }
     
-    console.log('Extracted evaluation result:', evaluationResult);
+    console.log('Final extracted evaluation result:', evaluationResult);
     
     // Convert score to number if it's a string with percentage
     let scoreValue: number;
     if (typeof evaluationResult.score === 'string') {
       // Remove percentage sign and convert to number
       scoreValue = parseFloat(evaluationResult.score.replace('%', ''));
+      console.log('Converted score string to number:', evaluationResult.score, '->', scoreValue);
     } else {
       scoreValue = evaluationResult.score as number;
     }
@@ -170,11 +190,15 @@ export const submitEvaluationData = async (data: EvaluationResultData) => {
     
     console.log('Stored evaluation result:', storedResult);
     
-    return {
+    // Ensure we're returning a consistent object structure
+    const resultObj = {
       evaluationId: storedResult?.id,
       score: evaluationResult.score,
-      overview: evaluationResult.summary || evaluationResult.overview
+      overview: evaluationResult.summary || evaluationResult.overview || ''
     };
+    
+    console.log('Final return object:', resultObj);
+    return resultObj;
   } catch (error) {
     console.error('Error in submitEvaluationData:', error);
     
@@ -213,3 +237,25 @@ export const submitEvaluationData = async (data: EvaluationResultData) => {
     }
   }
 };
+
+// Debugging function to simulate webhook response without making actual API call
+// Uncomment and use for local testing if needed
+/*
+function simulateWebhookResponse(name: string, email: string, phone: string | undefined, visaType: string) {
+  console.log('Simulating webhook response for:', { name, email, phone, visaType });
+  
+  const mockResponse = [
+    {
+      score: "87%",
+      overview: `Your ${visaType} visa application shows strong potential with a score of 87%. Based on your submitted documents, you have exceptional qualifications in your field. We recommend proceeding with your application with confidence.`
+    }
+  ];
+  
+  return {
+    evaluationId: "simulated-" + Math.random().toString(36).substring(2, 15),
+    score: mockResponse[0].score,
+    overview: mockResponse[0].overview
+  };
+}
+*/
+
