@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Home, SendHorizontal, Loader2 } from 'lucide-react';
@@ -31,14 +30,28 @@ const ResultPage = () => {
   useEffect(() => {
     const storedResult = sessionStorage.getItem('evaluationResult');
     if (storedResult) {
-      const result = JSON.parse(storedResult) as EvaluationResult;
-      setEvaluationResult(result);
-      
-      // If there's an evaluationId, try to get the full data from Supabase
-      if (result.evaluationId) {
-        fetchEvaluationFromSupabase(result.evaluationId.toString());
-      } else {
-        startChat(result);
+      try {
+        const result = JSON.parse(storedResult) as EvaluationResult;
+        console.log('Retrieved result from sessionStorage:', result);
+        setEvaluationResult(result);
+        
+        if (result.evaluationId) {
+          fetchEvaluationFromStorage(result.evaluationId.toString());
+        } else {
+          if (result.score && result.overview) {
+            startChat(result);
+          } else {
+            throw new Error('Incomplete evaluation data');
+          }
+        }
+      } catch (error) {
+        console.error('Error parsing stored result:', error);
+        toast({
+          title: "Data error",
+          description: "Could not retrieve your evaluation data. Please try again.",
+          variant: "destructive",
+        });
+        navigate('/input');
       }
     } else {
       toast({
@@ -49,16 +62,17 @@ const ResultPage = () => {
       navigate('/input');
     }
     
-    // Clean up sessionStorage when component unmounts
     return () => {
-      sessionStorage.removeItem('evaluationResult');
     };
   }, [navigate, toast]);
   
-  const fetchEvaluationFromSupabase = async (id: string) => {
+  const fetchEvaluationFromStorage = async (id: string) => {
     try {
+      console.log('Fetching evaluation with ID:', id);
       const supabaseResult = await getEvaluationResult(id);
+      
       if (supabaseResult) {
+        console.log('Retrieved evaluation from storage:', supabaseResult);
         const formattedResult: EvaluationResult = {
           score: supabaseResult.score,
           overview: supabaseResult.overview,
@@ -66,12 +80,24 @@ const ResultPage = () => {
         };
         setEvaluationResult(formattedResult);
         startChat(formattedResult);
+      } else {
+        console.warn('No evaluation found with ID:', id);
+        if (evaluationResult?.score && evaluationResult?.overview) {
+          startChat(evaluationResult);
+        } else {
+          throw new Error('Evaluation not found');
+        }
       }
     } catch (error) {
-      console.error('Error fetching from Supabase:', error);
-      // Continue with the data we have from sessionStorage
-      if (evaluationResult) {
+      console.error('Error fetching evaluation:', error);
+      if (evaluationResult?.score && evaluationResult?.overview) {
         startChat(evaluationResult);
+      } else {
+        toast({
+          title: "Data retrieval error",
+          description: "Could not retrieve your complete evaluation data.",
+          variant: "destructive",
+        });
       }
     }
   };
@@ -106,11 +132,10 @@ const ResultPage = () => {
         jsonResponse = JSON.parse(rawResponse);
         console.log('Parsed chat webhook response:', jsonResponse);
       } catch (parseError) {
-        console.error('Error parsing chat webhook response:', parseError);
+        console.error('Error parsing chat webhook response:', parseError, 'Raw response:', rawResponse);
         throw new Error('Invalid JSON response from chat webhook');
       }
       
-      // Extract initial message from response
       let initialMessage;
       if (jsonResponse.response) {
         initialMessage = jsonResponse.response;
@@ -119,7 +144,6 @@ const ResultPage = () => {
       } else if (jsonResponse.data && jsonResponse.data.response) {
         initialMessage = jsonResponse.data.response;
       } else {
-        // Fallback message if structure is unknown
         initialMessage = `Hi! I'm here to help with your ${result.score}% visa application. I've analyzed your documents and can provide guidance on improving your application. What would you like to know?`;
       }
       
@@ -134,7 +158,6 @@ const ResultPage = () => {
         variant: "destructive",
       });
       
-      // Fallback to offline mode with a generated message based on the evaluation
       const fallbackMessage = `Hi! I'm here to help with your visa application. Your score is ${result.score}%, which is promising. Based on your evaluation, I can offer some guidance. What specific aspect of your visa application would you like to discuss?`;
       
       setChatMessages([{ sender: 'AI', message: fallbackMessage }]);
@@ -181,7 +204,6 @@ const ResultPage = () => {
         throw new Error('Invalid JSON response from message webhook');
       }
       
-      // Extract AI response from webhook response
       let aiResponse;
       if (jsonResponse.response) {
         aiResponse = jsonResponse.response;
@@ -190,7 +212,6 @@ const ResultPage = () => {
       } else if (jsonResponse.data && jsonResponse.data.response) {
         aiResponse = jsonResponse.data.response;
       } else {
-        // Generate a fallback response
         aiResponse = generateFallbackResponse(userMessage);
       }
       
@@ -205,7 +226,6 @@ const ResultPage = () => {
         variant: "destructive",
       });
       
-      // Generate a fallback response in offline mode
       const fallbackResponse = generateFallbackResponse(userMessage);
       
       setTimeout(() => {
@@ -215,7 +235,6 @@ const ResultPage = () => {
     }
   };
   
-  // Function to generate fallback responses when webhook fails
   const generateFallbackResponse = (userMessage: string): string => {
     const lowerMsg = userMessage.toLowerCase();
     

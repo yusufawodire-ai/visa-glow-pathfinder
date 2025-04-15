@@ -80,12 +80,14 @@ const InputPage = () => {
       
       try {
         // Send data to the webhook
+        console.log('Sending data to webhook...');
         const response = await fetch('https://igta.app.n8n.cloud/webhook/DETAILS_SUBMISSION_WEBHOOK', {
           method: 'POST',
           body: formData,
         });
         
         if (!response.ok) {
+          console.error(`HTTP error! Status: ${response.status}`);
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
         
@@ -99,20 +101,21 @@ const InputPage = () => {
           jsonResponse = JSON.parse(rawResponse);
           console.log('Parsed webhook response:', jsonResponse);
         } catch (parseError) {
-          console.error('Error parsing webhook response:', parseError);
+          console.error('Error parsing webhook response:', parseError, 'Raw response:', rawResponse);
           throw new Error('Invalid JSON response from webhook');
         }
         
         // Extract the evaluation result data from the response
-        // The actual structure will depend on your webhook implementation
-        let evaluationResult;
+        let evaluationResult: { score: number; overview: string };
         
         // Check if the response contains the expected data
-        if (jsonResponse.result && typeof jsonResponse.result === 'object') {
+        if (jsonResponse.result && typeof jsonResponse.result === 'object' && 
+            'score' in jsonResponse.result && 'overview' in jsonResponse.result) {
           evaluationResult = jsonResponse.result;
-        } else if (jsonResponse.data && typeof jsonResponse.data === 'object') {
+        } else if (jsonResponse.data && typeof jsonResponse.data === 'object' && 
+                  'score' in jsonResponse.data && 'overview' in jsonResponse.data) {
           evaluationResult = jsonResponse.data;
-        } else if (jsonResponse.score !== undefined && jsonResponse.overview) {
+        } else if ('score' in jsonResponse && 'overview' in jsonResponse) {
           evaluationResult = jsonResponse;
         } else {
           console.error('Invalid response structure:', jsonResponse);
@@ -121,7 +124,12 @@ const InputPage = () => {
         
         console.log('Extracted evaluation result:', evaluationResult);
         
-        // Store the evaluation result in Supabase
+        if (!evaluationResult.score || !evaluationResult.overview) {
+          console.error('Missing score or overview in evaluation result:', evaluationResult);
+          throw new Error('Missing required fields in evaluation result');
+        }
+        
+        // Store the evaluation result in Supabase or local storage
         const storedResult = await storeEvaluationResult({
           name,
           email,
@@ -132,7 +140,7 @@ const InputPage = () => {
           user_id: crypto.randomUUID(), // Generate a random ID for anonymous users
         });
         
-        console.log('Stored evaluation result in Supabase:', storedResult);
+        console.log('Stored evaluation result:', storedResult);
         
         // Pass evaluation result ID to result page
         let navigationData = {
