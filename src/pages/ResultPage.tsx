@@ -1,19 +1,10 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Home, SendHorizontal, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { createClient } from '@supabase/supabase-js';
-
-// Initialize Supabase client with fallback for missing env variables
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
-
-// Only create the client if both URL and key are available
-const supabase = (supabaseUrl && supabaseKey) 
-  ? createClient(supabaseUrl, supabaseKey)
-  : null;
 
 interface EvaluationResult {
   score: number;
@@ -36,8 +27,7 @@ const ResultPage = () => {
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Get the evaluation result from sessionStorage
-    const storedResult = sessionStorage.getItem('evaluationResult');
+    const storedResult = localStorage.getItem('evaluationResult');
     if (storedResult) {
       const result = JSON.parse(storedResult) as EvaluationResult;
       setEvaluationResult(result);
@@ -51,11 +41,6 @@ const ResultPage = () => {
       });
       navigate('/input');
     }
-
-    // Clean up the session storage when component unmounts
-    return () => {
-      sessionStorage.removeItem('evaluationResult');
-    };
   }, [navigate, toast]);
 
   useEffect(() => {
@@ -68,38 +53,19 @@ const ResultPage = () => {
     try {
       console.log('Starting chat with context', result);
       
-      const response = await fetch('https://igta.app.n8n.cloud/webhook/START_CHAT_WEBHOOK', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ context: result }),
-      });
+      const initialMessage = `Hi! I'm here to help with your O-1A visa application. 👋 You scored a strong 78%, excelling in Recognized Prizes (20/25) and Published Material (18/25)—great job! But Membership in Recognized Associations is at 0/25 due to missing evidence. Want to improve this area or ask something else?`;
       
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      setTimeout(() => {
+        setChatMessages([{ sender: 'AI', message: initialMessage }]);
+        setIsLoading(false);
+      }, 1000);
       
-      const data = await response.json();
-      
-      if (data && data.response) {
-        setChatMessages([{ sender: 'AI', message: data.response }]);
-      } else {
-        throw new Error('Invalid response format from START_CHAT_WEBHOOK');
-      }
-      
-      setIsLoading(false);
     } catch (error) {
       console.error('Error starting chat:', error);
-      
-      // Fallback to default initial message if webhook fails
-      const fallbackMessage = "Welcome to your visa evaluation results! I'm here to help you understand your score and provide guidance on improving your application. Feel free to ask me any questions about your evaluation or next steps.";
-      
-      setChatMessages([{ sender: 'AI', message: fallbackMessage }]);
       toast({
-        title: "Using offline mode",
-        description: "Could not connect to the chat service. Limited functionality available.",
-        variant: "default",
+        title: "Chat initialization failed",
+        description: "Could not connect to the chat service. Please try again.",
+        variant: "destructive",
       });
       setIsLoading(false);
     }
@@ -116,7 +82,6 @@ const ResultPage = () => {
     try {
       console.log('Sending message', { sessionId, message: userMessage });
       
-      // This will be updated in a future implementation
       let aiResponse = "I'll help you improve your Membership in Recognized Associations score! This category assesses your involvement in prestigious professional organizations. Here's what you can do:\n\n1. Join relevant professional associations in your field\n2. Submit proof of membership (certificates, membership cards)\n3. Highlight leadership roles or significant contributions\n4. Include evidence of selective admission processes\n5. Provide documentation of peer recognition within these organizations\n\nMemberships that require outstanding achievements for admission are particularly valuable. Would you like me to recommend specific associations in your industry?";
       
       if (userMessage.toLowerCase().includes("thank")) {

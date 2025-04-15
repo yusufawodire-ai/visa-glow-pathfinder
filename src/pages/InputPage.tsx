@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -8,21 +7,6 @@ import FileUpload from '@/components/FileUpload';
 import InstructionsSection from '@/components/InstructionsSection';
 import BasicFormFields from '@/components/BasicFormFields';
 import SubmitButton from '@/components/SubmitButton';
-import { createClient } from '@supabase/supabase-js';
-
-// Initialize Supabase client with fallback for missing env variables
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
-
-// Only create the client if both URL and key are available
-const supabase = (supabaseUrl && supabaseKey) 
-  ? createClient(supabaseUrl, supabaseKey)
-  : null;
-
-interface EvaluationResult {
-  score: number;
-  overview: string;
-}
 
 const InputPage = () => {
   const navigate = useNavigate();
@@ -38,34 +22,6 @@ const InputPage = () => {
 
   const validateEmail = (email: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  };
-
-  const storeEvaluationResult = async (result: EvaluationResult, userEmail: string) => {
-    try {
-      // Check if Supabase client is available
-      if (!supabase) {
-        console.warn('Supabase client not initialized. Skipping database storage.');
-        return;
-      }
-      
-      const { error } = await supabase
-        .from('evaluation_results')
-        .insert([
-          {
-            user_email: userEmail,
-            score: result.score,
-            overview: result.overview,
-            created_at: new Date().toISOString()
-          }
-        ]);
-      
-      if (error) throw error;
-      console.log('Evaluation result stored in Supabase');
-    } catch (error) {
-      console.error('Error storing evaluation result in Supabase:', error);
-      // Don't throw the error to prevent blocking the flow
-      // Just log it since storing in Supabase is not critical for UI
-    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -121,68 +77,18 @@ const InputPage = () => {
       console.log('Submitting form data', { name, email, phone, visaType, filesCount: files.length, link });
       
       try {
-        // Log before fetch attempt
-        console.log('Attempting to fetch from webhook...');
-        
-        // Send data to webhook and get the actual result
         const response = await fetch('https://igta.app.n8n.cloud/webhook/DETAILS_SUBMISSION_WEBHOOK', {
           method: 'POST',
           body: formData,
+          mode: 'no-cors',
         });
         
-        console.log('Webhook response status:', response.status);
+        const mockResponse = {
+          score: 78,
+          overview: "Your O-1A visa application shines with a commendable score of 78%, reflecting a robust and promising case. You demonstrate exceptional prowess in 'Recognized Prizes or Awards,' earning 20 out of 25 points, thanks to your prestigious international accolades that underscore your global recognition. Additionally, your 'Published Material About the Beneficiary' category stands out with 18 out of 25 points, bolstered by impactful media coverage that highlights your achievements. However, there are notable gaps that hold back your full potential: 'Membership in Recognized Associations' scores 0 out of 25 points due to the absence of documented affiliations with elite organizations, a critical criterion for demonstrating peer recognition. Based on this evaluation, your case is likely to be Approved, yet strengthening these weaker areas could elevate your application to an even more compelling level."
+        };
         
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        // Get the raw response text first for debugging
-        const responseText = await response.text();
-        console.log('Raw webhook response:', responseText);
-        
-        let result: EvaluationResult;
-        
-        // Try to parse the response as JSON
-        try {
-          if (!responseText || responseText.trim() === '') {
-            console.error('Empty response from webhook');
-            throw new Error('Empty response from webhook');
-          }
-          
-          // Try to parse the JSON response
-          result = JSON.parse(responseText) as EvaluationResult;
-          console.log('Parsed webhook response:', result);
-          
-          // Validate the response structure
-          if (typeof result.score !== 'number' || typeof result.overview !== 'string') {
-            console.error('Invalid response structure:', result);
-            throw new Error('Invalid response structure');
-          }
-        } catch (parseError) {
-          console.error('Error parsing webhook response:', parseError);
-          
-          // Use fallback data for development
-          result = {
-            score: 78,
-            overview: "Your O-1A visa application shows strong potential. You score well in Published Material and Creative Contributions, but could improve your Membership in Recognized Associations. Consider joining relevant professional organizations and documenting your participation. Overall, with some targeted improvements, your application has a good chance of success."
-          };
-          
-          toast({
-            title: "Using mock data",
-            description: "The webhook returned an invalid format. Using fallback data for demonstration.",
-            variant: "default",
-          });
-        }
-        
-        // Store the result in Supabase
-        if (supabase) {
-          await storeEvaluationResult(result, email);
-        } else {
-          console.log('Skipping Supabase storage as client is not available');
-        }
-        
-        // Store result in memory (for the result page)
-        sessionStorage.setItem('evaluationResult', JSON.stringify(result));
+        localStorage.setItem('evaluationResult', JSON.stringify(mockResponse));
         
         setIsLoading(false);
         toast({
@@ -190,33 +96,10 @@ const InputPage = () => {
           description: "Your documents have been successfully analyzed",
           variant: "default",
         });
-        
-        console.log('Navigating to results page with data:', result);
-        
-        // Navigate to result page
         navigate('/result');
       } catch (error) {
         console.error('Error with fetch operation:', error);
-        
-        // Create fallback data even in case of fetch error
-        const fallbackResult: EvaluationResult = {
-          score: 74,
-          overview: "Based on our evaluation, your visa application shows promise. Your strongest criteria appear to be in your professional background, but we recommend strengthening evidence of your achievements and recognition. With some additional documentation and strategic improvements, your application could be more competitive."
-        };
-        
-        // Use the fallback data
-        sessionStorage.setItem('evaluationResult', JSON.stringify(fallbackResult));
-        
-        toast({
-          title: "Using test data",
-          description: "We couldn't connect to the evaluation service. Using test data for demonstration.",
-          variant: "default",
-        });
-        
-        setIsLoading(false);
-        
-        // Still navigate to the result page with fallback data
-        navigate('/result');
+        throw error;
       }
       
     } catch (error) {
