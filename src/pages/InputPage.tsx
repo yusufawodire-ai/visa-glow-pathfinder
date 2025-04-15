@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -10,10 +9,14 @@ import BasicFormFields from '@/components/BasicFormFields';
 import SubmitButton from '@/components/SubmitButton';
 import { createClient } from '@supabase/supabase-js';
 
-// Initialize Supabase client
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseKey);
+// Initialize Supabase client with fallback for missing env variables
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+
+// Only create the client if both URL and key are available
+const supabase = (supabaseUrl && supabaseKey) 
+  ? createClient(supabaseUrl, supabaseKey)
+  : null;
 
 interface EvaluationResult {
   score: number;
@@ -38,6 +41,12 @@ const InputPage = () => {
 
   const storeEvaluationResult = async (result: EvaluationResult, userEmail: string) => {
     try {
+      // Check if Supabase client is available
+      if (!supabase) {
+        console.warn('Supabase client not initialized. Skipping database storage.');
+        return;
+      }
+      
       const { error } = await supabase
         .from('evaluation_results')
         .insert([
@@ -53,7 +62,8 @@ const InputPage = () => {
       console.log('Evaluation result stored in Supabase');
     } catch (error) {
       console.error('Error storing evaluation result in Supabase:', error);
-      throw error;
+      // Don't throw the error to prevent blocking the flow
+      // Just log it since storing in Supabase is not critical for UI
     }
   };
 
