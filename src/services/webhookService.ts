@@ -36,65 +36,74 @@ export const submitEvaluationData = async (data: EvaluationResultData) => {
   });
   
   console.log('Sending data to webhook...');
-  const response = await fetch('https://igta.app.n8n.cloud/webhook/DETAILS_SUBMISSION_WEBHOOK', {
-    method: 'POST',
-    body: formData,
-  });
-  
-  if (!response.ok) {
-    console.error(`HTTP error! Status: ${response.status}`);
-    throw new Error(`HTTP error! Status: ${response.status}`);
-  }
-  
-  const rawResponse = await response.text();
-  console.log('Raw webhook response:', rawResponse);
-  
-  let jsonResponse;
   try {
-    jsonResponse = JSON.parse(rawResponse);
-    console.log('Parsed webhook response:', jsonResponse);
-  } catch (parseError) {
-    console.error('Error parsing webhook response:', parseError, 'Raw response:', rawResponse);
-    throw new Error('Invalid JSON response from webhook');
+    const response = await fetch('https://igta.app.n8n.cloud/webhook/DETAILS_SUBMISSION_WEBHOOK', {
+      method: 'POST',
+      body: formData,
+    });
+    
+    if (!response.ok) {
+      console.error(`HTTP error! Status: ${response.status}`);
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+    
+    const rawResponse = await response.text();
+    console.log('Raw webhook response:', rawResponse);
+    
+    let jsonResponse;
+    try {
+      jsonResponse = JSON.parse(rawResponse);
+      console.log('Parsed webhook response:', jsonResponse);
+    } catch (parseError) {
+      console.error('Error parsing webhook response:', parseError, 'Raw response:', rawResponse);
+      throw new Error('Invalid JSON response from webhook');
+    }
+    
+    // Extract the evaluation result based on the expected format
+    let evaluationResult: WebhookResponse;
+    
+    if (Array.isArray(jsonResponse) && jsonResponse.length > 0) {
+      // Handle array format [{ score: number, overview: string }]
+      const firstResult = jsonResponse[0];
+      if ('score' in firstResult && 'overview' in firstResult) {
+        evaluationResult = firstResult;
+      } else {
+        throw new Error('Invalid response structure in array');
+      }
+    } else if ('score' in jsonResponse && 'overview' in jsonResponse) {
+      // Handle direct object format { score: number, overview: string }
+      evaluationResult = jsonResponse;
+    } else {
+      console.error('Invalid response structure:', jsonResponse);
+      throw new Error('Response does not match expected format { score: number, overview: string }');
+    }
+    
+    console.log('Extracted evaluation result:', evaluationResult);
+    
+    if (typeof evaluationResult.score !== 'number' || typeof evaluationResult.overview !== 'string') {
+      console.error('Invalid types in evaluation result:', evaluationResult);
+      throw new Error('Invalid data types in evaluation result');
+    }
+    
+    const storedResult = await storeEvaluationResult({
+      name,
+      email,
+      phone: phone || undefined,
+      visa_type: visaType,
+      score: evaluationResult.score,
+      overview: evaluationResult.overview,
+      user_id: crypto.randomUUID(), // Generate a random ID for anonymous users
+    });
+    
+    console.log('Stored evaluation result:', storedResult);
+    
+    return {
+      evaluationId: storedResult?.id,
+      score: evaluationResult.score,
+      overview: evaluationResult.overview
+    };
+  } catch (error) {
+    console.error('Error in submitEvaluationData:', error);
+    throw error; // Re-throw to be handled by the caller
   }
-  
-  let evaluationResult: WebhookResponse;
-  
-  if (jsonResponse.result && typeof jsonResponse.result === 'object' && 
-      'score' in jsonResponse.result && 'overview' in jsonResponse.result) {
-    evaluationResult = jsonResponse.result;
-  } else if (jsonResponse.data && typeof jsonResponse.data === 'object' && 
-            'score' in jsonResponse.data && 'overview' in jsonResponse.data) {
-    evaluationResult = jsonResponse.data;
-  } else if ('score' in jsonResponse && 'overview' in jsonResponse) {
-    evaluationResult = jsonResponse;
-  } else {
-    console.error('Invalid response structure:', jsonResponse);
-    throw new Error('Invalid response structure');
-  }
-  
-  console.log('Extracted evaluation result:', evaluationResult);
-  
-  if (!evaluationResult.score || !evaluationResult.overview) {
-    console.error('Missing score or overview in evaluation result:', evaluationResult);
-    throw new Error('Missing required fields in evaluation result');
-  }
-  
-  const storedResult = await storeEvaluationResult({
-    name,
-    email,
-    phone: phone || undefined,
-    visa_type: visaType,
-    score: evaluationResult.score,
-    overview: evaluationResult.overview,
-    user_id: crypto.randomUUID(), // Generate a random ID for anonymous users
-  });
-  
-  console.log('Stored evaluation result:', storedResult);
-  
-  return {
-    evaluationId: storedResult?.id,
-    score: evaluationResult.score,
-    overview: evaluationResult.overview
-  };
 };
