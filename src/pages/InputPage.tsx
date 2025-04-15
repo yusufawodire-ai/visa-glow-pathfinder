@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -120,21 +121,34 @@ const InputPage = () => {
       console.log('Submitting form data', { name, email, phone, visaType, filesCount: files.length, link });
       
       try {
+        // Log before fetch attempt
+        console.log('Attempting to fetch from webhook...');
+        
         // Send data to webhook and get the actual result
         const response = await fetch('https://igta.app.n8n.cloud/webhook/DETAILS_SUBMISSION_WEBHOOK', {
           method: 'POST',
           body: formData,
         });
         
+        console.log('Webhook response status:', response.status);
+        
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         
-        let result: EvaluationResult;
+        // Get the raw response text first for debugging
         const responseText = await response.text();
         console.log('Raw webhook response:', responseText);
         
+        let result: EvaluationResult;
+        
+        // Try to parse the response as JSON
         try {
+          if (!responseText || responseText.trim() === '') {
+            console.error('Empty response from webhook');
+            throw new Error('Empty response from webhook');
+          }
+          
           // Try to parse the JSON response
           result = JSON.parse(responseText) as EvaluationResult;
           console.log('Parsed webhook response:', result);
@@ -142,18 +156,7 @@ const InputPage = () => {
           // Validate the response structure
           if (typeof result.score !== 'number' || typeof result.overview !== 'string') {
             console.error('Invalid response structure:', result);
-            
-            // Use fallback data for development
-            result = {
-              score: 78,
-              overview: "Your O-1A visa application shows strong potential. You score well in Published Material and Creative Contributions, but could improve your Membership in Recognized Associations. Consider joining relevant professional organizations and documenting your participation. Overall, with some targeted improvements, your application has a good chance of success."
-            };
-            
-            toast({
-              title: "Using mock data",
-              description: "The webhook returned an invalid format. Using fallback data for demonstration.",
-              variant: "default",
-            });
+            throw new Error('Invalid response structure');
           }
         } catch (parseError) {
           console.error('Error parsing webhook response:', parseError);
@@ -172,7 +175,11 @@ const InputPage = () => {
         }
         
         // Store the result in Supabase
-        await storeEvaluationResult(result, email);
+        if (supabase) {
+          await storeEvaluationResult(result, email);
+        } else {
+          console.log('Skipping Supabase storage as client is not available');
+        }
         
         // Store result in memory (for the result page)
         sessionStorage.setItem('evaluationResult', JSON.stringify(result));
@@ -184,11 +191,32 @@ const InputPage = () => {
           variant: "default",
         });
         
+        console.log('Navigating to results page with data:', result);
+        
         // Navigate to result page
         navigate('/result');
       } catch (error) {
         console.error('Error with fetch operation:', error);
-        throw error;
+        
+        // Create fallback data even in case of fetch error
+        const fallbackResult: EvaluationResult = {
+          score: 74,
+          overview: "Based on our evaluation, your visa application shows promise. Your strongest criteria appear to be in your professional background, but we recommend strengthening evidence of your achievements and recognition. With some additional documentation and strategic improvements, your application could be more competitive."
+        };
+        
+        // Use the fallback data
+        sessionStorage.setItem('evaluationResult', JSON.stringify(fallbackResult));
+        
+        toast({
+          title: "Using test data",
+          description: "We couldn't connect to the evaluation service. Using test data for demonstration.",
+          variant: "default",
+        });
+        
+        setIsLoading(false);
+        
+        // Still navigate to the result page with fallback data
+        navigate('/result');
       }
       
     } catch (error) {
