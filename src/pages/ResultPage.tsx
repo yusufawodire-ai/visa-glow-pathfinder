@@ -5,10 +5,12 @@ import { Home, SendHorizontal, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { getEvaluationResult } from '@/lib/supabase';
 
 interface EvaluationResult {
   score: number;
   overview: string;
+  evaluationId?: string | number;
 }
 
 interface ChatMessage {
@@ -27,12 +29,17 @@ const ResultPage = () => {
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const storedResult = localStorage.getItem('evaluationResult');
+    const storedResult = sessionStorage.getItem('evaluationResult');
     if (storedResult) {
       const result = JSON.parse(storedResult) as EvaluationResult;
       setEvaluationResult(result);
       
-      startChat(result);
+      // If there's an evaluationId, try to get the full data from Supabase
+      if (result.evaluationId) {
+        fetchEvaluationFromSupabase(result.evaluationId.toString());
+      } else {
+        startChat(result);
+      }
     } else {
       toast({
         title: "No evaluation found",
@@ -41,7 +48,33 @@ const ResultPage = () => {
       });
       navigate('/input');
     }
+    
+    // Clean up sessionStorage when component unmounts
+    return () => {
+      sessionStorage.removeItem('evaluationResult');
+    };
   }, [navigate, toast]);
+  
+  const fetchEvaluationFromSupabase = async (id: string) => {
+    try {
+      const supabaseResult = await getEvaluationResult(id);
+      if (supabaseResult) {
+        const formattedResult: EvaluationResult = {
+          score: supabaseResult.score,
+          overview: supabaseResult.overview,
+          evaluationId: supabaseResult.id
+        };
+        setEvaluationResult(formattedResult);
+        startChat(formattedResult);
+      }
+    } catch (error) {
+      console.error('Error fetching from Supabase:', error);
+      // Continue with the data we have from sessionStorage
+      if (evaluationResult) {
+        startChat(evaluationResult);
+      }
+    }
+  };
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -53,20 +86,58 @@ const ResultPage = () => {
     try {
       console.log('Starting chat with context', result);
       
-      const initialMessage = `Hi! I'm here to help with your O-1A visa application. 👋 You scored a strong 78%, excelling in Recognized Prizes (20/25) and Published Material (18/25)—great job! But Membership in Recognized Associations is at 0/25 due to missing evidence. Want to improve this area or ask something else?`;
+      const response = await fetch('https://igta.app.n8n.cloud/webhook/START_CHAT_WEBHOOK', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ context: result }),
+      });
       
-      setTimeout(() => {
-        setChatMessages([{ sender: 'AI', message: initialMessage }]);
-        setIsLoading(false);
-      }, 1000);
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      
+      const rawResponse = await response.text();
+      console.log('Raw chat webhook response:', rawResponse);
+      
+      let jsonResponse;
+      try {
+        jsonResponse = JSON.parse(rawResponse);
+        console.log('Parsed chat webhook response:', jsonResponse);
+      } catch (parseError) {
+        console.error('Error parsing chat webhook response:', parseError);
+        throw new Error('Invalid JSON response from chat webhook');
+      }
+      
+      // Extract initial message from response
+      let initialMessage;
+      if (jsonResponse.response) {
+        initialMessage = jsonResponse.response;
+      } else if (jsonResponse.message) {
+        initialMessage = jsonResponse.message;
+      } else if (jsonResponse.data && jsonResponse.data.response) {
+        initialMessage = jsonResponse.data.response;
+      } else {
+        // Fallback message if structure is unknown
+        initialMessage = `Hi! I'm here to help with your ${result.score}% visa application. I've analyzed your documents and can provide guidance on improving your application. What would you like to know?`;
+      }
+      
+      setChatMessages([{ sender: 'AI', message: initialMessage }]);
+      setIsLoading(false);
       
     } catch (error) {
       console.error('Error starting chat:', error);
       toast({
         title: "Chat initialization failed",
-        description: "Could not connect to the chat service. Please try again.",
+        description: "Could not connect to the chat service. Using offline mode.",
         variant: "destructive",
       });
+      
+      // Fallback to offline mode with a generated message based on the evaluation
+      const fallbackMessage = `Hi! I'm here to help with your visa application. Your score is ${result.score}%, which is promising. Based on your evaluation, I can offer some guidance. What specific aspect of your visa application would you like to discuss?`;
+      
+      setChatMessages([{ sender: 'AI', message: fallbackMessage }]);
       setIsLoading(false);
     }
   };
@@ -82,27 +153,80 @@ const ResultPage = () => {
     try {
       console.log('Sending message', { sessionId, message: userMessage });
       
-      let aiResponse = "I'll help you improve your Membership in Recognized Associations score! This category assesses your involvement in prestigious professional organizations. Here's what you can do:\n\n1. Join relevant professional associations in your field\n2. Submit proof of membership (certificates, membership cards)\n3. Highlight leadership roles or significant contributions\n4. Include evidence of selective admission processes\n5. Provide documentation of peer recognition within these organizations\n\nMemberships that require outstanding achievements for admission are particularly valuable. Would you like me to recommend specific associations in your industry?";
+      const response = await fetch('https://igta.app.n8n.cloud/webhook/SEND_MESSAGE_WEBHOOK', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          sessionId,
+          message: userMessage,
+          evaluationId: evaluationResult?.evaluationId
+        }),
+      });
       
-      if (userMessage.toLowerCase().includes("thank")) {
-        aiResponse = "You're welcome! I'm here to help with any other questions about your visa application. Feel free to ask about specific criteria, documentation needs, or next steps in the process.";
-      } else if (userMessage.toLowerCase().includes("score")) {
-        aiResponse = "Your overall score of 78% is quite strong! Here's the breakdown by category:\n\n• Recognized Prizes/Awards: 20/25 (Excellent)\n• Published Material: 18/25 (Very Good)\n• Memberships: 0/25 (Opportunity for improvement)\n• Judging Others' Work: 15/25 (Good)\n• Original Contributions: 16/25 (Good)\n• High Salary: 9/25 (Moderate)\n\nWith some improvements to your Memberships evidence, you could potentially reach 85-90%.";
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
       }
       
-      setTimeout(() => {
-        setChatMessages(prev => [...prev, { sender: 'AI', message: aiResponse }]);
-        setIsLoading(false);
-      }, 1500);
+      const rawResponse = await response.text();
+      console.log('Raw message webhook response:', rawResponse);
+      
+      let jsonResponse;
+      try {
+        jsonResponse = JSON.parse(rawResponse);
+        console.log('Parsed message webhook response:', jsonResponse);
+      } catch (parseError) {
+        console.error('Error parsing message webhook response:', parseError);
+        throw new Error('Invalid JSON response from message webhook');
+      }
+      
+      // Extract AI response from webhook response
+      let aiResponse;
+      if (jsonResponse.response) {
+        aiResponse = jsonResponse.response;
+      } else if (jsonResponse.message) {
+        aiResponse = jsonResponse.message;
+      } else if (jsonResponse.data && jsonResponse.data.response) {
+        aiResponse = jsonResponse.data.response;
+      } else {
+        // Generate a fallback response
+        aiResponse = generateFallbackResponse(userMessage);
+      }
+      
+      setChatMessages(prev => [...prev, { sender: 'AI', message: aiResponse }]);
+      setIsLoading(false);
       
     } catch (error) {
       console.error('Error sending message:', error);
       toast({
         title: "Message failed",
-        description: "Could not send your message. Please try again.",
+        description: "Could not send your message. Using offline mode.",
         variant: "destructive",
       });
-      setIsLoading(false);
+      
+      // Generate a fallback response in offline mode
+      const fallbackResponse = generateFallbackResponse(userMessage);
+      
+      setTimeout(() => {
+        setChatMessages(prev => [...prev, { sender: 'AI', message: fallbackResponse }]);
+        setIsLoading(false);
+      }, 1000);
+    }
+  };
+  
+  // Function to generate fallback responses when webhook fails
+  const generateFallbackResponse = (userMessage: string): string => {
+    const lowerMsg = userMessage.toLowerCase();
+    
+    if (lowerMsg.includes("thank")) {
+      return "You're welcome! I'm here to help with any other questions about your visa application. Feel free to ask about specific criteria, documentation needs, or next steps in the process.";
+    } else if (lowerMsg.includes("score") || lowerMsg.includes("result")) {
+      return `Your overall score of ${evaluationResult?.score || 78}% is quite strong! Here's a summary of your evaluation:\n\n${evaluationResult?.overview || "You have a promising application with some areas that could be strengthened."}\n\nIs there a specific aspect you'd like more guidance on?`;
+    } else if (lowerMsg.includes("improve") || lowerMsg.includes("better")) {
+      return "To improve your visa application, focus on gathering stronger evidence in the categories where you scored lower. This might include joining professional associations, documenting your contributions to your field, or obtaining additional letters of recommendation from experts. Would you like specific suggestions for your case?";
+    } else {
+      return "Thanks for your question. While I'm currently operating in offline mode, I can still provide general guidance on visa applications. Based on your evaluation, you have a strong case that could be further improved in certain areas. Is there a specific aspect of the visa process you'd like to know more about?";
     }
   };
 
@@ -162,7 +286,7 @@ const ResultPage = () => {
                   fill="none"
                   stroke="url(#gradient)"
                   strokeWidth="6"
-                  strokeDasharray={`${2 * Math.PI * 45 * evaluationResult.score / 100} ${2 * Math.PI * 45 * (1 - evaluationResult.score / 100)}`}
+                  strokeDasharray={`${2 * Math.PI * 45 * (evaluationResult?.score || 0) / 100} ${2 * Math.PI * 45 * (1 - (evaluationResult?.score || 0) / 100)}`}
                   strokeDashoffset={2 * Math.PI * 45 * 0.25}
                   strokeLinecap="round"
                   className="animate-pulse-glow"
@@ -174,7 +298,7 @@ const ResultPage = () => {
                   </linearGradient>
                 </defs>
               </svg>
-              <span className="text-3xl font-bold text-white">{evaluationResult.score}%</span>
+              <span className="text-3xl font-bold text-white">{evaluationResult?.score || 0}%</span>
             </div>
           </div>
           
@@ -183,7 +307,7 @@ const ResultPage = () => {
           </h2>
           
           <div className="prose prose-invert flex-grow overflow-auto">
-            <p className="text-white whitespace-pre-line">{evaluationResult.overview}</p>
+            <p className="text-white whitespace-pre-line">{evaluationResult?.overview || "No overview available"}</p>
           </div>
         </div>
         
