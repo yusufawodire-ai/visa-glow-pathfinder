@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Home, SendHorizontal, Loader2, AlertTriangle, MessageCircle } from 'lucide-react';
@@ -343,9 +342,7 @@ const ResultPage = () => {
                     strokeDasharray={`${2 * Math.PI * 45 * (parseFloat(evaluationResult.score.toString().replace('%', '')) / 100)} ${2 * Math.PI * 45 * (1 - (parseFloat(evaluationResult.score.toString().replace('%', '')) / 100))}`}
                     strokeDashoffset={2 * Math.PI * 45 * 0.25}
                     strokeLinecap="round"
-                    style={{
-                      filter: 'drop-shadow(0 0 10px rgba(254, 247, 205, 0.6)) drop-shadow(0 0 20px rgba(235, 194, 80, 0.4))',
-                    }}
+                    className="animate-glow-pulse"
                   />
                   <defs>
                     <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">

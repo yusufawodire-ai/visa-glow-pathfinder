@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -93,11 +92,14 @@ export default {
           }
         },
         "glow-pulse": {
-          "0%, 100%": { 
-            filter: "drop-shadow(0 0 5px rgba(235, 194, 80, 0.4))"
+          "0%": { 
+            filter: "drop-shadow(0 0 5px rgba(254, 247, 205, 0.4)) drop-shadow(0 0 10px rgba(235, 194, 80, 0.3))"
           },
           "50%": { 
-            filter: "drop-shadow(0 0 15px rgba(235, 194, 80, 0.7))" 
+            filter: "drop-shadow(0 0 15px rgba(254, 247, 205, 0.7)) drop-shadow(0 0 25px rgba(235, 194, 80, 0.6))"
+          },
+          "100%": { 
+            filter: "drop-shadow(0 0 5px rgba(254, 247, 205, 0.4)) drop-shadow(0 0 10px rgba(235, 194, 80, 0.3))"
           }
         },
         "float": {
