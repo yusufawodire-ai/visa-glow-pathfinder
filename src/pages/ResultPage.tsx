@@ -299,7 +299,7 @@ const ResultPage = () => {
   }
 
   return (
-    <div className="min-h-screen py-8 px-4 md:px-8 bg-[#0C0A04]">
+    <div className="min-h-screen py-8 px-4 md:px-8 bg-[#050404]">
       <div className="flex justify-between items-center mb-8">
         <Button
           onClick={() => navigate('/')}
@@ -345,7 +345,7 @@ const ResultPage = () => {
                     strokeLinecap="round"
                     className="animate-pulse"
                     style={{
-                      filter: 'drop-shadow(0 0 8px rgba(235, 194, 80, 0.5))',
+                      filter: 'drop-shadow(0 0 15px rgba(235, 194, 80, 0.5))',
                     }}
                   />
                   <defs>
@@ -355,7 +355,9 @@ const ResultPage = () => {
                     </linearGradient>
                   </defs>
                 </svg>
-                <span className="text-3xl font-bold text-white z-10 relative">{typeof evaluationResult.score === 'string' ? evaluationResult.score : `${evaluationResult.score}%`}</span>
+                <span className="text-3xl font-bold text-white">
+                  {typeof evaluationResult.score === 'string' ? evaluationResult.score : `${evaluationResult.score}%`}
+                </span>
               </div>
             </div>
             
@@ -369,7 +371,7 @@ const ResultPage = () => {
           </div>
         ) : null}
         
-        <div className="glass-container flex flex-col h-[600px]">
+        <div className="glass-container flex flex-col h-[750px]">
           <h2 className="text-2xl font-semibold mb-6 text-center bg-gradient-to-r from-visa-gold to-white bg-clip-text text-transparent">
             Chat with Us
           </h2>

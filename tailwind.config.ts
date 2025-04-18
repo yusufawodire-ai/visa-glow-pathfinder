@@ -92,6 +92,14 @@ export default {
             filter: "drop-shadow(0 0 12px rgba(235, 194, 80, 0.6))" 
           }
         },
+        "glow-pulse": {
+          "0%, 100%": { 
+            filter: "drop-shadow(0 0 5px rgba(235, 194, 80, 0.4))"
+          },
+          "50%": { 
+            filter: "drop-shadow(0 0 15px rgba(235, 194, 80, 0.7))" 
+          }
+        },
         "float": {
           "0%, 100%": { transform: "translateY(0)" },
           "50%": { transform: "translateY(-10px)" }
@@ -109,6 +117,7 @@ export default {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "pulse": "pulse 2s ease-in-out infinite",
+        "glow-pulse": "glow-pulse 3s ease-in-out infinite",
         "float": "float 3s ease-in-out infinite",
         "fade-in": "fade-in 0.5s ease-out",
         "shimmer": "shimmer 2s linear infinite"
