@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -57,7 +56,7 @@ export default {
           foreground: "hsl(var(--card-foreground))"
         },
         visa: {
-          "background": "#1a1209", // Dark brown background
+          "background": "#0C0A04", // Darker, richer black background
           "dark-gray": "#1E2A44",
           "lilac": "#6A4E7F",
           "light-lilac": "#A78BFA",
@@ -115,6 +114,9 @@ export default {
       },
       backgroundImage: {
         "gradient-shimmer": "linear-gradient(90deg, transparent, rgba(0, 102, 255, 0.2), transparent)",
+      },
+      boxShadow: {
+        'circle-glow': '0 0 20px 5px rgba(235, 194, 80, 0.3), 0 0 40px 10px rgba(235, 194, 80, 0.1)'
       }
     }
   },

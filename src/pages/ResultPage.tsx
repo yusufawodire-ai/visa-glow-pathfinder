@@ -280,7 +280,7 @@ const ResultPage = () => {
   }
 
   return (
-    <div className="min-h-screen py-8 px-4 md:px-8 bg-visa-dark-gray">
+    <div className="min-h-screen py-8 px-4 md:px-8 bg-[#0C0A04]">
       <div className="flex justify-between items-center mb-8">
         <Button
           onClick={() => navigate('/')}
@@ -324,7 +324,10 @@ const ResultPage = () => {
                     strokeDasharray={`${2 * Math.PI * 45 * (parseFloat(evaluationResult.score.toString().replace('%', '')) / 100)} ${2 * Math.PI * 45 * (1 - (parseFloat(evaluationResult.score.toString().replace('%', '')) / 100))}`}
                     strokeDashoffset={2 * Math.PI * 45 * 0.25}
                     strokeLinecap="round"
-                    className="animate-pulse-glow"
+                    className="animate-pulse-glow group"
+                    style={{
+                      filter: 'drop-shadow(0 0 10px rgba(235, 194, 80, 0.5))',
+                    }}
                   />
                   <defs>
                     <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -333,7 +336,7 @@ const ResultPage = () => {
                     </linearGradient>
                   </defs>
                 </svg>
-                <span className="text-3xl font-bold text-white">{typeof evaluationResult.score === 'string' ? evaluationResult.score : `${evaluationResult.score}%`}</span>
+                <span className="text-3xl font-bold text-white z-10 relative">{typeof evaluationResult.score === 'string' ? evaluationResult.score : `${evaluationResult.score}%`}</span>
               </div>
             </div>
             
@@ -345,104 +348,7 @@ const ResultPage = () => {
               <p className="text-white whitespace-pre-line">{evaluationResult.overview}</p>
             </div>
           </div>
-        ) : (
-          <div className="glass-container flex flex-col items-center justify-center h-full p-8">
-            <AlertTriangle size={36} className="text-visa-gold mb-4" />
-            <h2 className="text-2xl font-semibold mb-4 text-center text-white">
-              No Evaluation Results
-            </h2>
-            <p className="text-white text-center mb-6">
-              We couldn't retrieve your evaluation results. Please try submitting the form again.
-            </p>
-            <Button
-              onClick={() => navigate('/input')}
-              className="bg-visa-gold text-black hover:bg-visa-gold/80"
-            >
-              Return to Form
-            </Button>
-          </div>
-        )}
-        
-        <div className="glass-container flex flex-col h-full">
-          <h2 className="text-2xl font-semibold mb-6 text-center bg-gradient-to-r from-visa-gold to-white bg-clip-text text-transparent">
-            Chat with Us
-          </h2>
-          
-          {chatMessages.length > 0 ? (
-            <>
-              <ScrollArea className="flex-grow mb-4 pr-4 h-[400px]">
-                <div className="space-y-4">
-                  {chatMessages.map((message, index) => (
-                    <div 
-                      key={index} 
-                      className={`p-3 rounded-lg max-w-[85%] ${
-                        message.sender === 'AI' 
-                          ? 'bg-visa-navy/60 mr-auto' 
-                          : 'bg-visa-burgundy/60 ml-auto'
-                      }`}
-                    >
-                      <p className="text-xs text-gray-300 mb-1">{message.sender}</p>
-                      <p className="whitespace-pre-line text-white">{message.message}</p>
-                    </div>
-                  ))}
-                  
-                  {isLoading && (
-                    <div className="bg-visa-navy/60 p-3 rounded-lg max-w-[85%] mr-auto">
-                      <p className="text-xs text-gray-300 mb-1">AI</p>
-                      <div className="flex space-x-2">
-                        <div className="h-2 w-2 bg-gray-300 rounded-full animate-pulse"></div>
-                        <div className="h-2 w-2 bg-gray-300 rounded-full animate-pulse delay-100"></div>
-                        <div className="h-2 w-2 bg-gray-300 rounded-full animate-pulse delay-200"></div>
-                      </div>
-                    </div>
-                  )}
-                  
-                  <div ref={chatEndRef} />
-                </div>
-              </ScrollArea>
-              
-              <div className="flex">
-                <textarea
-                  value={currentMessage}
-                  onChange={(e) => setCurrentMessage(e.target.value)}
-                  onKeyDown={handleKeyPress}
-                  placeholder="Type your message..."
-                  className="input-field flex-grow resize-none mr-2"
-                  rows={1}
-                  disabled={isLoading}
-                />
-                <Button
-                  onClick={sendMessage}
-                  disabled={isLoading || !currentMessage.trim()}
-                  className="bg-black text-white hover:bg-gray-900 font-medium px-4 py-2 rounded-lg transition-all duration-300 group flex items-center shadow-xl"
-                  aria-label="Send message"
-                >
-                  <SendHorizontal 
-                    size={20} 
-                    className="mr-2 group-hover:translate-x-1 transition-transform text-white" 
-                  />
-                  Send
-                </Button>
-              </div>
-            </>
-          ) : (
-            <div className="flex-grow flex flex-col items-center justify-center p-6">
-              {isLoading ? (
-                <>
-                  <Loader2 size={36} className="animate-spin text-visa-light-lilac mb-4" />
-                  <p className="text-white">Connecting to chat service...</p>
-                </>
-              ) : (
-                <>
-                  <AlertTriangle size={36} className="text-visa-gold mb-4" />
-                  <p className="text-white text-center mb-6">
-                    Chat service is currently unavailable. Please check back later to discuss your evaluation.
-                  </p>
-                </>
-              )}
-            </div>
-          )}
-        </div>
+        ) : null}
       </div>
     </div>
   );
