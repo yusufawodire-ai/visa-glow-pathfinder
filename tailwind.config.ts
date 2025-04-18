@@ -93,13 +93,13 @@ export default {
         },
         "glow-pulse": {
           "0%": { 
-            filter: "drop-shadow(0 0 5px rgba(254, 247, 205, 0.4)) drop-shadow(0 0 10px rgba(235, 194, 80, 0.3))"
+            filter: "drop-shadow(0 0 3px rgba(254, 247, 205, 0.3)) drop-shadow(0 0 6px rgba(235, 194, 80, 0.2))"
           },
           "50%": { 
-            filter: "drop-shadow(0 0 15px rgba(254, 247, 205, 0.7)) drop-shadow(0 0 25px rgba(235, 194, 80, 0.6))"
+            filter: "drop-shadow(0 0 8px rgba(254, 247, 205, 0.5)) drop-shadow(0 0 15px rgba(235, 194, 80, 0.4))"
           },
           "100%": { 
-            filter: "drop-shadow(0 0 5px rgba(254, 247, 205, 0.4)) drop-shadow(0 0 10px rgba(235, 194, 80, 0.3))"
+            filter: "drop-shadow(0 0 3px rgba(254, 247, 205, 0.3)) drop-shadow(0 0 6px rgba(235, 194, 80, 0.2))"
           }
         },
         "float": {
