@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -83,12 +84,12 @@ export default {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
-        "pulse-glow": {
+        "pulse": {
           "0%, 100%": { 
-            boxShadow: "0 0 10px 2px rgba(235, 194, 80, 0.4), 0 0 20px 4px rgba(235, 194, 80, 0.2)"
+            filter: "drop-shadow(0 0 4px rgba(235, 194, 80, 0.3))"
           },
           "50%": { 
-            boxShadow: "0 0 15px 3px rgba(235, 194, 80, 0.6), 0 0 30px 6px rgba(235, 194, 80, 0.3)" 
+            filter: "drop-shadow(0 0 12px rgba(235, 194, 80, 0.6))" 
           }
         },
         "float": {
@@ -107,16 +108,13 @@ export default {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "pulse-glow": "pulse-glow 2s ease-in-out infinite",
+        "pulse": "pulse 2s ease-in-out infinite",
         "float": "float 3s ease-in-out infinite",
         "fade-in": "fade-in 0.5s ease-out",
         "shimmer": "shimmer 2s linear infinite"
       },
       backgroundImage: {
         "gradient-shimmer": "linear-gradient(90deg, transparent, rgba(0, 102, 255, 0.2), transparent)",
-      },
-      boxShadow: {
-        'circle-glow': '0 0 20px 5px rgba(235, 194, 80, 0.3), 0 0 40px 10px rgba(235, 194, 80, 0.1)'
       }
     }
   },

@@ -1,10 +1,12 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Home, SendHorizontal, Loader2, AlertTriangle } from 'lucide-react';
+import { Home, SendHorizontal, Loader2, AlertTriangle, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { getEvaluationResult } from '@/lib/supabase';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface EvaluationResult {
   score: string | number;
@@ -25,6 +27,7 @@ const ResultPage = () => {
   const [currentMessage, setCurrentMessage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [chatError, setChatError] = useState<string | null>(null);
   const [sessionId] = useState(`user-${Math.random().toString(36).substring(2, 15)}`);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
@@ -117,59 +120,66 @@ const ResultPage = () => {
     try {
       console.log('Starting chat with context', result);
       
-      const response = await fetch('https://igta.app.n8n.cloud/webhook-test/START_CHAT_OUTPUT_WEBHOOK', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ context: result }),
-      });
+      // Default welcome message in case the API call fails
+      const defaultMessage = `Hi! I'm here to help with your visa application. I've analyzed your documents and can provide guidance on improving your application, which currently has a ${result.score}% chance of approval. What would you like to know?`;
       
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-      
-      const rawResponse = await response.text();
-      console.log('Raw chat webhook response:', rawResponse);
-      
-      let jsonResponse;
       try {
-        jsonResponse = JSON.parse(rawResponse);
-        console.log('Parsed chat webhook response:', jsonResponse);
-      } catch (parseError) {
-        console.error('Error parsing chat webhook response:', parseError, 'Raw response:', rawResponse);
-        throw new Error('Invalid JSON response from chat webhook');
+        const response = await fetch('https://igta.app.n8n.cloud/webhook-test/START_CHAT_OUTPUT_WEBHOOK', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ context: result }),
+          signal: AbortSignal.timeout(15000) // 15 second timeout
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        
+        const rawResponse = await response.text();
+        console.log('Raw chat webhook response:', rawResponse);
+        
+        let jsonResponse;
+        try {
+          jsonResponse = JSON.parse(rawResponse);
+          console.log('Parsed chat webhook response:', jsonResponse);
+        } catch (parseError) {
+          console.error('Error parsing chat webhook response:', parseError, 'Raw response:', rawResponse);
+          throw new Error('Invalid JSON response from chat webhook');
+        }
+        
+        let initialMessage;
+        
+        // Detect the location of the response in the JSON
+        if (jsonResponse.response) {
+          initialMessage = jsonResponse.response;
+        } else if (jsonResponse.message) {
+          initialMessage = jsonResponse.message;
+        } else if (jsonResponse.data && jsonResponse.data.response) {
+          initialMessage = jsonResponse.data.response;
+        } else {
+          // Fallback if no specific response structure is found
+          initialMessage = defaultMessage;
+        }
+        
+        setChatMessages([{ sender: 'AI', message: initialMessage }]);
+        setChatError(null); // Clear any previous chat errors
+      } catch (error) {
+        console.error('Error starting chat:', error);
+        setChatError("Could not connect to the chat service. You can still view your evaluation results and try messaging.");
+        // Still show a default message to allow the user to start chatting
+        setChatMessages([{ sender: 'AI', message: defaultMessage }]);
+        
+        toast({
+          title: "Chat initialization failed",
+          description: "Could not connect to the chat service. You can still view your evaluation results.",
+          variant: "destructive",
+        });
       }
       
-      let initialMessage;
-      
-      // Detect the location of the response in the JSON
-      if (jsonResponse.response) {
-        initialMessage = jsonResponse.response;
-      } else if (jsonResponse.message) {
-        initialMessage = jsonResponse.message;
-      } else if (jsonResponse.data && jsonResponse.data.response) {
-        initialMessage = jsonResponse.data.response;
-      } else {
-        // Fallback if no specific response structure is found
-        initialMessage = `Hi! I'm here to help with your ${result.score}% visa application. I've analyzed your documents and can provide guidance on improving your application. What would you like to know?`;
-      }
-      
-      setChatMessages([{ sender: 'AI', message: initialMessage }]);
+    } finally {
       setIsLoading(false);
-      
-    } catch (error) {
-      console.error('Error starting chat:', error);
-      setIsLoading(false);
-      
-      // Still show evaluation results, but notify about chat issue
-      toast({
-        title: "Chat initialization failed",
-        description: "Could not connect to the chat service. You can still view your evaluation results.",
-        variant: "destructive",
-      });
-      
-      setChatMessages([]);
     }
   };
 
@@ -184,62 +194,71 @@ const ResultPage = () => {
     try {
       console.log('Sending message', { sessionId, message: userMessage });
       
-      const response = await fetch('https://igta.app.n8n.cloud/webhook/SEND_MESSAGE_WEBHOOK', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          sessionId,
-          message: userMessage,
-          evaluationId: evaluationResult?.evaluationId
-        }),
-      });
+      const defaultResponse = "I'm sorry, I couldn't connect to our chat server. Here's what you can do: 1) Try sending a message again, 2) Refresh the page, or 3) Contact support if the issue persists.";
       
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-      
-      const rawResponse = await response.text();
-      console.log('Raw message webhook response:', rawResponse);
-      
-      let jsonResponse;
       try {
-        jsonResponse = JSON.parse(rawResponse);
-        console.log('Parsed message webhook response:', jsonResponse);
-      } catch (parseError) {
-        console.error('Error parsing message webhook response:', parseError);
-        throw new Error('Invalid JSON response from message webhook');
+        const response = await fetch('https://igta.app.n8n.cloud/webhook/SEND_MESSAGE_WEBHOOK', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ 
+            sessionId,
+            message: userMessage,
+            evaluationId: evaluationResult?.evaluationId
+          }),
+          signal: AbortSignal.timeout(15000) // 15 second timeout
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        
+        const rawResponse = await response.text();
+        console.log('Raw message webhook response:', rawResponse);
+        
+        let jsonResponse;
+        try {
+          jsonResponse = JSON.parse(rawResponse);
+          console.log('Parsed message webhook response:', jsonResponse);
+        } catch (parseError) {
+          console.error('Error parsing message webhook response:', parseError);
+          throw new Error('Invalid JSON response from message webhook');
+        }
+        
+        let aiResponse;
+        if (jsonResponse.response) {
+          aiResponse = jsonResponse.response;
+        } else if (jsonResponse.message) {
+          aiResponse = jsonResponse.message;
+        } else if (jsonResponse.data && jsonResponse.data.response) {
+          aiResponse = jsonResponse.data.response;
+        } else {
+          throw new Error('Response format not recognized');
+        }
+        
+        setChatMessages(prev => [...prev, { sender: 'AI', message: aiResponse }]);
+        setChatError(null); // Clear any previous errors
+        
+      } catch (error) {
+        console.error('Error sending message:', error);
+        setChatError("Could not send your message. Please try again later.");
+        
+        // Add error message to chat
+        setChatMessages(prev => [...prev, { 
+          sender: 'AI', 
+          message: defaultResponse
+        }]);
+        
+        toast({
+          title: "Message failed",
+          description: "Could not send your message. Please try again later.",
+          variant: "destructive",
+        });
       }
       
-      let aiResponse;
-      if (jsonResponse.response) {
-        aiResponse = jsonResponse.response;
-      } else if (jsonResponse.message) {
-        aiResponse = jsonResponse.message;
-      } else if (jsonResponse.data && jsonResponse.data.response) {
-        aiResponse = jsonResponse.data.response;
-      } else {
-        throw new Error('Response format not recognized');
-      }
-      
-      setChatMessages(prev => [...prev, { sender: 'AI', message: aiResponse }]);
+    } finally {
       setIsLoading(false);
-      
-    } catch (error) {
-      console.error('Error sending message:', error);
-      setIsLoading(false);
-      toast({
-        title: "Message failed",
-        description: "Could not send your message. Please try again later.",
-        variant: "destructive",
-      });
-      
-      // Add error message to chat
-      setChatMessages(prev => [...prev, { 
-        sender: 'AI', 
-        message: "I'm sorry, I couldn't process your message right now. Please try again later." 
-      }]);
     }
   };
 
@@ -252,7 +271,7 @@ const ResultPage = () => {
 
   if (isLoading && !evaluationResult) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-visa-dark-gray">
+      <div className="min-h-screen flex items-center justify-center bg-[#0C0A04]">
         <div className="flex flex-col items-center">
           <Loader2 size={48} className="animate-spin text-visa-light-lilac mb-4" />
           <p className="text-white">Loading your evaluation results...</p>
@@ -263,7 +282,7 @@ const ResultPage = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-visa-dark-gray">
+      <div className="min-h-screen flex items-center justify-center bg-[#0C0A04]">
         <div className="glass-container max-w-md p-8 text-center">
           <AlertTriangle size={48} className="mx-auto mb-4 text-visa-gold" />
           <h2 className="text-2xl font-semibold mb-4 text-white">Evaluation Error</h2>
@@ -324,9 +343,9 @@ const ResultPage = () => {
                     strokeDasharray={`${2 * Math.PI * 45 * (parseFloat(evaluationResult.score.toString().replace('%', '')) / 100)} ${2 * Math.PI * 45 * (1 - (parseFloat(evaluationResult.score.toString().replace('%', '')) / 100))}`}
                     strokeDashoffset={2 * Math.PI * 45 * 0.25}
                     strokeLinecap="round"
-                    className="animate-pulse-glow group"
+                    className="animate-pulse"
                     style={{
-                      filter: 'drop-shadow(0 0 10px rgba(235, 194, 80, 0.5))',
+                      filter: 'drop-shadow(0 0 8px rgba(235, 194, 80, 0.5))',
                     }}
                   />
                   <defs>
@@ -349,6 +368,72 @@ const ResultPage = () => {
             </div>
           </div>
         ) : null}
+        
+        <div className="glass-container flex flex-col h-[600px]">
+          <h2 className="text-2xl font-semibold mb-6 text-center bg-gradient-to-r from-visa-gold to-white bg-clip-text text-transparent">
+            Chat with Us
+          </h2>
+          
+          {chatError && (
+            <Alert variant="destructive" className="mb-4 border-red-500 bg-red-900/20 text-white">
+              <AlertDescription>{chatError}</AlertDescription>
+            </Alert>
+          )}
+          
+          <ScrollArea className="flex-grow mb-4 pr-4">
+            <div className="space-y-4">
+              {chatMessages.map((msg, i) => (
+                <div
+                  key={i}
+                  className={`flex ${
+                    msg.sender === 'You' ? 'justify-end' : 'justify-start'
+                  }`}
+                >
+                  <div
+                    className={`max-w-[80%] rounded-lg p-3 ${
+                      msg.sender === 'You'
+                        ? 'bg-visa-gold text-black'
+                        : 'bg-visa-navy text-white'
+                    }`}
+                  >
+                    <p className="whitespace-pre-line">{msg.message}</p>
+                  </div>
+                </div>
+              ))}
+              {isLoading && (
+                <div className="flex justify-start">
+                  <div className="bg-visa-navy text-white max-w-[80%] rounded-lg p-3">
+                    <Loader2 size={20} className="animate-spin" />
+                  </div>
+                </div>
+              )}
+              <div ref={chatEndRef} />
+            </div>
+          </ScrollArea>
+          
+          <div className="flex items-center gap-2 mt-auto">
+            <textarea
+              className="bg-visa-dark-gray border border-visa-lilac/30 rounded-lg px-4 py-2 text-white placeholder:text-gray-400 w-full focus:outline-none focus:ring-2 focus:ring-visa-light-lilac resize-none"
+              placeholder="Type your message..."
+              rows={2}
+              value={currentMessage}
+              onChange={(e) => setCurrentMessage(e.target.value)}
+              onKeyDown={handleKeyPress}
+              disabled={isLoading}
+            />
+            <Button
+              onClick={sendMessage}
+              className="bg-visa-gold hover:bg-visa-gold/80 text-black h-10 w-10 rounded-full p-0 flex-shrink-0"
+              disabled={isLoading || !currentMessage.trim()}
+            >
+              {isLoading ? (
+                <Loader2 size={20} className="animate-spin" />
+              ) : (
+                <SendHorizontal size={20} />
+              )}
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   );
