@@ -343,15 +343,14 @@ const ResultPage = () => {
                     strokeDasharray={`${2 * Math.PI * 45 * (parseFloat(evaluationResult.score.toString().replace('%', '')) / 100)} ${2 * Math.PI * 45 * (1 - (parseFloat(evaluationResult.score.toString().replace('%', '')) / 100))}`}
                     strokeDashoffset={2 * Math.PI * 45 * 0.25}
                     strokeLinecap="round"
-                    className="animate-pulse"
                     style={{
-                      filter: 'drop-shadow(0 0 15px rgba(235, 194, 80, 0.5))',
+                      filter: 'drop-shadow(0 0 10px rgba(254, 247, 205, 0.6)) drop-shadow(0 0 20px rgba(235, 194, 80, 0.4))',
                     }}
                   />
                   <defs>
                     <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#EBC250" />
-                      <stop offset="100%" stopColor="#FFFFFF" />
+                      <stop offset="0%" stopColor="#FEF7CD" />
+                      <stop offset="100%" stopColor="#EBC250" />
                     </linearGradient>
                   </defs>
                 </svg>
@@ -398,6 +397,11 @@ const ResultPage = () => {
                         : 'bg-visa-navy text-white'
                     }`}
                   >
+                    {msg.sender === 'AI' && i === 0 && (
+                      <div className="bg-visa-gold/20 text-visa-gold text-xs px-2 py-0.5 rounded-full inline-block mb-2">
+                        AI Assistant
+                      </div>
+                    )}
                     <p className="whitespace-pre-line">{msg.message}</p>
                   </div>
                 </div>
