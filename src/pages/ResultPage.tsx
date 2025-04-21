@@ -114,38 +114,59 @@ const ResultPage = () => {
     setIsLoading(true);
 
     try {
-      console.log('Starting chat with context', result);
+      console.log('Initializing chat session with context', result);
 
+      // First call the START_CHAT_OUTPUT_WEBHOOK to initialize the chat
+      const initResponse = await fetch('https://igta.app.n8n.cloud/webhook-test/START_CHAT_OUTPUT_WEBHOOK', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ context: result }),
+        signal: AbortSignal.timeout(15000),
+      });
+
+      if (!initResponse.ok) {
+        throw new Error(`Failed to initialize chat. Status: ${initResponse.status}`);
+      }
+
+      console.log('Chat session initialized successfully');
+
+      // Default message in case the user message webhook fails
       const defaultMessage = `Hi! I'm here to help with your visa application. I've analyzed your documents and can provide guidance on improving your application, which currently has a ${result.score}% chance of approval. What would you like to know?`;
 
+      // Now get the initial message using the USER_MESSAGE_OUTPUT_WEBHOOK
       try {
-        const response = await fetch('https://igta.app.n8n.cloud/webhook-test/START_CHAT_OUTPUT_WEBHOOK', {
+        const messageResponse = await fetch('https://igta.app.n8n.cloud/webhook-test/USER_MESSAGE_OUTPUT_WEBHOOK', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ context: result }),
-          signal: AbortSignal.timeout(15000), // 15 second timeout
+          body: JSON.stringify({
+            sessionId,
+            message: 'start',
+            evaluationId: result.evaluationId,
+          }),
+          signal: AbortSignal.timeout(15000),
         });
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
+        if (!messageResponse.ok) {
+          throw new Error(`HTTP error! Status: ${messageResponse.status}`);
         }
 
-        const rawResponse = await response.text();
-        console.log('Raw chat webhook response:', rawResponse);
+        const rawResponse = await messageResponse.text();
+        console.log('Raw message webhook response:', rawResponse);
 
         let jsonResponse;
         try {
           jsonResponse = JSON.parse(rawResponse);
-          console.log('Parsed chat webhook response:', jsonResponse);
+          console.log('Parsed message webhook response:', jsonResponse);
         } catch (parseError) {
-          console.error('Error parsing chat webhook response:', parseError, 'Raw response:', rawResponse);
-          throw new Error('Invalid JSON response from chat webhook');
+          console.error('Error parsing message webhook response:', parseError, 'Raw response:', rawResponse);
+          throw new Error('Invalid JSON response from message webhook');
         }
 
         let initialMessage;
-
         if (jsonResponse.response) {
           initialMessage = jsonResponse.response;
         } else if (jsonResponse.message) {
@@ -159,16 +180,28 @@ const ResultPage = () => {
         setChatMessages([{ sender: 'AI', message: initialMessage }]);
         setChatError(null);
       } catch (error) {
-        console.error('Error starting chat:', error);
-        setChatError("Could not connect to the chat service. You can still view your evaluation results and try messaging.");
+        console.error('Error getting initial message:', error);
+        setChatError("Could not get the initial message. You can still view your evaluation results and try messaging.");
         setChatMessages([{ sender: 'AI', message: defaultMessage }]);
 
         toast({
           title: "Chat initialization failed",
-          description: "Could not connect to the chat service. You can still view your evaluation results.",
+          description: "Could not get the initial message. You can still view your evaluation results.",
           variant: "destructive",
         });
       }
+    } catch (error) {
+      console.error('Error in chat initialization:', error);
+      const defaultMessage = `Hi! I'm here to help with your visa application. I've analyzed your documents and can provide guidance on improving your application, which currently has a ${result.score}% chance of approval. What would you like to know?`;
+      
+      setChatError("Could not initialize the chat session. You can still view your evaluation results.");
+      setChatMessages([{ sender: 'AI', message: defaultMessage }]);
+
+      toast({
+        title: "Chat initialization failed",
+        description: "Could not initialize the chat session. You can still view your evaluation results.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -199,7 +232,7 @@ const ResultPage = () => {
             message: userMessage,
             evaluationId: evaluationResult?.evaluationId,
           }),
-          signal: AbortSignal.timeout(15000), // 15 second timeout
+          signal: AbortSignal.timeout(15000),
         });
 
         if (!response.ok) {
