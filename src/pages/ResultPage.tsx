@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Home, SendHorizontal, Loader2, AlertTriangle, MessageCircle } from 'lucide-react';
@@ -54,11 +55,12 @@ const ResultPage = () => {
 
       setEvaluationResult(result);
 
-      // Start chat immediately once score and overview are set
-      startChat(result);
-
       if (result.evaluationId) {
         fetchEvaluationFromStorage(result.evaluationId.toString());
+      } else {
+        // If we don't have an evaluationId, use the data from sessionStorage
+        console.log('No evaluationId found, using sessionStorage data for chat context');
+        initializeChat(result);
       }
     } catch (error) {
       console.error('Error parsing stored result:', error);
@@ -85,11 +87,11 @@ const ResultPage = () => {
           evaluationId: supabaseResult.id
         };
         setEvaluationResult(formattedResult);
-        startChat(formattedResult);
+        initializeChat(formattedResult);
       } else {
         console.warn('No evaluation found with ID:', id);
         if (evaluationResult?.score && evaluationResult?.overview) {
-          startChat(evaluationResult);
+          initializeChat(evaluationResult);
         } else {
           throw new Error('Evaluation not found in database');
         }
@@ -110,20 +112,31 @@ const ResultPage = () => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages]);
 
-  const startChat = async (result: EvaluationResult) => {
+  const initializeChat = async (result: EvaluationResult) => {
     setIsLoading(true);
 
     try {
-      console.log('Initializing chat session with context', result);
-      const defaultMessage = `Hi! I'm here to help with your visa application. I've analyzed your documents and can provide guidance on improving your application, which currently has a ${result.score}% chance of approval. What would you like to know?`;
-
-      // First call to initialize chat session
+      console.log('Initializing chat with evaluation result:', result);
+      
+      // First call to initialize chat session with full context
+      console.log('Sending request to START_CHAT_OUTPUT_WEBHOOK with context:', {
+        sessionId,
+        context: result,
+        evaluationId: result.evaluationId || 'no-id'
+      });
+      
       const initResponse = await fetch('https://igta.app.n8n.cloud/webhook-test/START_CHAT_OUTPUT_WEBHOOK', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ context: result }),
+        body: JSON.stringify({
+          sessionId,
+          context: result,
+          evaluationId: result.evaluationId || 'no-id',
+          score: result.score,
+          overview: result.overview
+        }),
         signal: AbortSignal.timeout(15000),
       });
 
@@ -131,51 +144,22 @@ const ResultPage = () => {
         throw new Error(`Failed to initialize chat. Status: ${initResponse.status}`);
       }
 
-      console.log('Chat session initialized successfully');
-
-      // After successful initialization, get the initial message
-      const messageResponse = await fetch('https://igta.app.n8n.cloud/webhook-test/USER_MESSAGE_OUTPUT_WEBHOOK', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          sessionId,
-          message: 'start',
-          evaluationId: result.evaluationId,
-        }),
-        signal: AbortSignal.timeout(15000),
-      });
-
-      if (!messageResponse.ok) {
-        throw new Error(`HTTP error! Status: ${messageResponse.status}`);
-      }
-
-      const rawResponse = await messageResponse.text();
-      console.log('Raw message webhook response:', rawResponse);
-
-      let jsonResponse;
+      // Log the full response for debugging
+      const initResponseText = await initResponse.text();
+      console.log('START_CHAT_OUTPUT_WEBHOOK response:', initResponseText);
+      
       try {
-        jsonResponse = JSON.parse(rawResponse);
-        console.log('Parsed message webhook response:', jsonResponse);
-      } catch (parseError) {
-        console.error('Error parsing message webhook response:', parseError, 'Raw response:', rawResponse);
-        throw new Error('Invalid JSON response from message webhook');
+        const initResponseData = JSON.parse(initResponseText);
+        console.log('Parsed START_CHAT_OUTPUT_WEBHOOK response data:', initResponseData);
+      } catch (e) {
+        console.log('Could not parse START_CHAT_OUTPUT_WEBHOOK response as JSON:', e);
       }
 
-      let initialMessage;
-      if (jsonResponse.response) {
-        initialMessage = jsonResponse.response;
-      } else if (jsonResponse.message) {
-        initialMessage = jsonResponse.message;
-      } else if (jsonResponse.data && jsonResponse.data.response) {
-        initialMessage = jsonResponse.data.response;
-      } else {
-        initialMessage = defaultMessage;
-      }
-
-      setChatMessages([{ sender: 'AI', message: initialMessage }]);
-      setChatError(null);
+      console.log('Chat session initialized successfully, now fetching initial message');
+      
+      // After successful initialization, send the first user message to get AI response
+      await sendFirstMessage(result);
+      
     } catch (error) {
       console.error('Error in chat initialization:', error);
       const defaultMessage = `Hi! I'm here to help with your visa application. I've analyzed your documents and can provide guidance on improving your application, which currently has a ${result.score}% chance of approval. What would you like to know?`;
@@ -193,6 +177,62 @@ const ResultPage = () => {
     }
   };
 
+  const sendFirstMessage = async (result: EvaluationResult) => {
+    try {
+      console.log('Sending first message to USER_MESSAGE_OUTPUT_WEBHOOK');
+      
+      const messageResponse = await fetch('https://igta.app.n8n.cloud/webhook-test/USER_MESSAGE_OUTPUT_WEBHOOK', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          sessionId,
+          message: 'start',
+          evaluationId: result.evaluationId || 'no-id',
+          score: result.score,
+          overview: result.overview
+        }),
+        signal: AbortSignal.timeout(15000),
+      });
+
+      if (!messageResponse.ok) {
+        throw new Error(`HTTP error! Status: ${messageResponse.status}`);
+      }
+
+      const rawResponse = await messageResponse.text();
+      console.log('Raw USER_MESSAGE_OUTPUT_WEBHOOK response:', rawResponse);
+
+      let jsonResponse;
+      try {
+        jsonResponse = JSON.parse(rawResponse);
+        console.log('Parsed USER_MESSAGE_OUTPUT_WEBHOOK response:', jsonResponse);
+      } catch (parseError) {
+        console.error('Error parsing message webhook response:', parseError, 'Raw response:', rawResponse);
+        throw new Error('Invalid JSON response from message webhook');
+      }
+
+      let initialMessage;
+      if (jsonResponse.response) {
+        initialMessage = jsonResponse.response;
+      } else if (jsonResponse.message) {
+        initialMessage = jsonResponse.message;
+      } else if (jsonResponse.data && jsonResponse.data.response) {
+        initialMessage = jsonResponse.data.response;
+      } else {
+        const defaultMessage = `Hi! I'm here to help with your visa application. I've analyzed your documents and can provide guidance on improving your application, which currently has a ${result.score}% chance of approval. What would you like to know?`;
+        initialMessage = defaultMessage;
+      }
+
+      setChatMessages([{ sender: 'AI', message: initialMessage }]);
+      setChatError(null);
+    } catch (error) {
+      console.error('Error sending first message:', error);
+      const defaultMessage = `Hi! I'm here to help with your visa application. I've analyzed your documents and can provide guidance on improving your application, which currently has a ${result.score}% chance of approval. What would you like to know?`;
+      setChatMessages([{ sender: 'AI', message: defaultMessage }]);
+    }
+  };
+
   const sendMessage = async () => {
     if (!currentMessage.trim() || isLoading) return;
 
@@ -202,7 +242,12 @@ const ResultPage = () => {
     setIsLoading(true);
 
     try {
-      console.log('Sending message', { sessionId, message: userMessage });
+      console.log('Sending user message to USER_MESSAGE_OUTPUT_WEBHOOK:', { 
+        sessionId, 
+        message: userMessage,
+        evaluationId: evaluationResult?.evaluationId || 'no-id'
+      });
+      
       const response = await fetch('https://igta.app.n8n.cloud/webhook-test/USER_MESSAGE_OUTPUT_WEBHOOK', {
         method: 'POST',
         headers: {
@@ -211,7 +256,9 @@ const ResultPage = () => {
         body: JSON.stringify({
           sessionId,
           message: userMessage,
-          evaluationId: evaluationResult?.evaluationId,
+          evaluationId: evaluationResult?.evaluationId || 'no-id',
+          score: evaluationResult?.score,
+          overview: evaluationResult?.overview
         }),
         signal: AbortSignal.timeout(15000),
       });
@@ -221,12 +268,12 @@ const ResultPage = () => {
       }
 
       const rawResponse = await response.text();
-      console.log('Raw message webhook response:', rawResponse);
+      console.log('Raw USER_MESSAGE_OUTPUT_WEBHOOK response:', rawResponse);
 
       let jsonResponse;
       try {
         jsonResponse = JSON.parse(rawResponse);
-        console.log('Parsed message webhook response:', jsonResponse);
+        console.log('Parsed USER_MESSAGE_OUTPUT_WEBHOOK response:', jsonResponse);
       } catch (parseError) {
         console.error('Error parsing message webhook response:', parseError);
         throw new Error('Invalid JSON response from message webhook');
@@ -451,3 +498,4 @@ const ResultPage = () => {
 };
 
 export default ResultPage;
+
