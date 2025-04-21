@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Home, SendHorizontal, Loader2, AlertTriangle, MessageCircle } from 'lucide-react';
@@ -33,7 +32,7 @@ const ResultPage = () => {
 
   useEffect(() => {
     const storedResult = sessionStorage.getItem('evaluationResult');
-    
+
     if (!storedResult) {
       setIsLoading(false);
       setError("No evaluation data found. Please complete the form first.");
@@ -44,17 +43,18 @@ const ResultPage = () => {
       });
       return;
     }
-    
+
     try {
       const result = JSON.parse(storedResult) as EvaluationResult;
       console.log('Retrieved result from sessionStorage:', result);
-      
+
       if (!result.score || !result.overview) {
         throw new Error('Incomplete evaluation data');
       }
-      
+
       setEvaluationResult(result);
-      
+
+      // Start chat immediately once score and overview are set
       startChat(result);
 
       if (result.evaluationId) {
@@ -70,17 +70,13 @@ const ResultPage = () => {
         variant: "destructive",
       });
     }
-    
-    return () => {
-      // Cleanup function if needed
-    };
   }, [navigate, toast]);
-  
+
   const fetchEvaluationFromStorage = async (id: string) => {
     try {
       console.log('Fetching evaluation with ID:', id);
       const supabaseResult = await getEvaluationResult(id);
-      
+
       if (supabaseResult) {
         console.log('Retrieved evaluation from storage:', supabaseResult);
         const formattedResult: EvaluationResult = {
@@ -116,12 +112,12 @@ const ResultPage = () => {
 
   const startChat = async (result: EvaluationResult) => {
     setIsLoading(true);
-    
+
     try {
       console.log('Starting chat with context', result);
-      
+
       const defaultMessage = `Hi! I'm here to help with your visa application. I've analyzed your documents and can provide guidance on improving your application, which currently has a ${result.score}% chance of approval. What would you like to know?`;
-      
+
       try {
         const response = await fetch('https://igta.app.n8n.cloud/webhook-test/START_CHAT_OUTPUT_WEBHOOK', {
           method: 'POST',
@@ -129,16 +125,16 @@ const ResultPage = () => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({ context: result }),
-          signal: AbortSignal.timeout(15000) // 15 second timeout
+          signal: AbortSignal.timeout(15000), // 15 second timeout
         });
-        
+
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
-        
+
         const rawResponse = await response.text();
         console.log('Raw chat webhook response:', rawResponse);
-        
+
         let jsonResponse;
         try {
           jsonResponse = JSON.parse(rawResponse);
@@ -147,9 +143,9 @@ const ResultPage = () => {
           console.error('Error parsing chat webhook response:', parseError, 'Raw response:', rawResponse);
           throw new Error('Invalid JSON response from chat webhook');
         }
-        
+
         let initialMessage;
-        
+
         if (jsonResponse.response) {
           initialMessage = jsonResponse.response;
         } else if (jsonResponse.message) {
@@ -159,21 +155,20 @@ const ResultPage = () => {
         } else {
           initialMessage = defaultMessage;
         }
-        
+
         setChatMessages([{ sender: 'AI', message: initialMessage }]);
         setChatError(null);
       } catch (error) {
         console.error('Error starting chat:', error);
         setChatError("Could not connect to the chat service. You can still view your evaluation results and try messaging.");
         setChatMessages([{ sender: 'AI', message: defaultMessage }]);
-        
+
         toast({
           title: "Chat initialization failed",
           description: "Could not connect to the chat service. You can still view your evaluation results.",
           variant: "destructive",
         });
       }
-      
     } finally {
       setIsLoading(false);
     }
@@ -181,38 +176,39 @@ const ResultPage = () => {
 
   const sendMessage = async () => {
     if (!currentMessage.trim() || isLoading) return;
-    
+
     const userMessage = currentMessage.trim();
     setCurrentMessage('');
-    setChatMessages(prev => [...prev, { sender: 'You', message: userMessage }]);
+    setChatMessages((prev) => [...prev, { sender: 'You', message: userMessage }]);
     setIsLoading(true);
-    
+
     try {
       console.log('Sending message', { sessionId, message: userMessage });
-      
-      const defaultResponse = "I'm sorry, I couldn't connect to our chat server. Here's what you can do: 1) Try sending a message again, 2) Refresh the page, or 3) Contact support if the issue persists.";
-      
+
+      const defaultResponse =
+        "I'm sorry, I couldn't connect to our chat server. Here's what you can do: 1) Try sending a message again, 2) Refresh the page, or 3) Contact support if the issue persists.";
+
       try {
         const response = await fetch('https://igta.app.n8n.cloud/webhook-test/USER_MESSAGE_OUTPUT_WEBHOOK', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ 
+          body: JSON.stringify({
             sessionId,
             message: userMessage,
-            evaluationId: evaluationResult?.evaluationId
+            evaluationId: evaluationResult?.evaluationId,
           }),
-          signal: AbortSignal.timeout(15000) // 15 second timeout
+          signal: AbortSignal.timeout(15000), // 15 second timeout
         });
-        
+
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
-        
+
         const rawResponse = await response.text();
         console.log('Raw message webhook response:', rawResponse);
-        
+
         let jsonResponse;
         try {
           jsonResponse = JSON.parse(rawResponse);
@@ -221,7 +217,7 @@ const ResultPage = () => {
           console.error('Error parsing message webhook response:', parseError);
           throw new Error('Invalid JSON response from message webhook');
         }
-        
+
         let aiResponse;
         if (jsonResponse.response) {
           aiResponse = jsonResponse.response;
@@ -232,25 +228,27 @@ const ResultPage = () => {
         } else {
           throw new Error('Response format not recognized');
         }
-        
-        setChatMessages(prev => [...prev, { sender: 'AI', message: aiResponse }]);
+
+        setChatMessages((prev) => [...prev, { sender: 'AI', message: aiResponse }]);
         setChatError(null);
       } catch (error) {
         console.error('Error sending message:', error);
         setChatError("Could not send your message. Please try again later.");
-        
-        setChatMessages(prev => [...prev, { 
-          sender: 'AI', 
-          message: defaultResponse
-        }]);
-        
+
+        setChatMessages((prev) => [
+          ...prev,
+          {
+            sender: 'AI',
+            message: defaultResponse,
+          },
+        ]);
+
         toast({
           title: "Message failed",
           description: "Could not send your message. Please try again later.",
           variant: "destructive",
         });
       }
-      
     } finally {
       setIsLoading(false);
     }
