@@ -54,10 +54,10 @@ const ResultPage = () => {
       
       setEvaluationResult(result);
       
+      startChat(result);
+
       if (result.evaluationId) {
         fetchEvaluationFromStorage(result.evaluationId.toString());
-      } else {
-        startChat(result);
       }
     } catch (error) {
       console.error('Error parsing stored result:', error);
@@ -119,7 +119,6 @@ const ResultPage = () => {
     try {
       console.log('Starting chat with context', result);
       
-      // Default welcome message in case the API call fails
       const defaultMessage = `Hi! I'm here to help with your visa application. I've analyzed your documents and can provide guidance on improving your application, which currently has a ${result.score}% chance of approval. What would you like to know?`;
       
       try {
@@ -150,7 +149,6 @@ const ResultPage = () => {
         
         let initialMessage;
         
-        // Detect the location of the response in the JSON
         if (jsonResponse.response) {
           initialMessage = jsonResponse.response;
         } else if (jsonResponse.message) {
@@ -158,16 +156,14 @@ const ResultPage = () => {
         } else if (jsonResponse.data && jsonResponse.data.response) {
           initialMessage = jsonResponse.data.response;
         } else {
-          // Fallback if no specific response structure is found
           initialMessage = defaultMessage;
         }
         
         setChatMessages([{ sender: 'AI', message: initialMessage }]);
-        setChatError(null); // Clear any previous chat errors
+        setChatError(null);
       } catch (error) {
         console.error('Error starting chat:', error);
         setChatError("Could not connect to the chat service. You can still view your evaluation results and try messaging.");
-        // Still show a default message to allow the user to start chatting
         setChatMessages([{ sender: 'AI', message: defaultMessage }]);
         
         toast({
@@ -196,7 +192,7 @@ const ResultPage = () => {
       const defaultResponse = "I'm sorry, I couldn't connect to our chat server. Here's what you can do: 1) Try sending a message again, 2) Refresh the page, or 3) Contact support if the issue persists.";
       
       try {
-        const response = await fetch('https://igta.app.n8n.cloud/webhook-test/USER_MESSAGE_OUTPUT_WEBHOOK', {
+        const response = await fetch('https://igta.app.n8n.cloud/webhook-test/USER_MESSAGE_OUTPUT_WEBHOOKa', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -237,13 +233,11 @@ const ResultPage = () => {
         }
         
         setChatMessages(prev => [...prev, { sender: 'AI', message: aiResponse }]);
-        setChatError(null); // Clear any previous errors
-        
+        setChatError(null);
       } catch (error) {
         console.error('Error sending message:', error);
         setChatError("Could not send your message. Please try again later.");
         
-        // Add error message to chat
         setChatMessages(prev => [...prev, { 
           sender: 'AI', 
           message: defaultResponse
