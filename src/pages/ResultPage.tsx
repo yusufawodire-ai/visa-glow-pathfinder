@@ -196,7 +196,7 @@ const ResultPage = () => {
       const defaultResponse = "I'm sorry, I couldn't connect to our chat server. Here's what you can do: 1) Try sending a message again, 2) Refresh the page, or 3) Contact support if the issue persists.";
       
       try {
-        const response = await fetch('https://igta.app.n8n.cloud/webhook/SEND_MESSAGE_WEBHOOK', {
+        const response = await fetch('https://igta.app.n8n.cloud/webhook-test/USER_MESSAGE_OUTPUT_WEBHOOK', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
