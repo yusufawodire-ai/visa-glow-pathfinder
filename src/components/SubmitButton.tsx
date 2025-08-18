@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 
 interface SubmitButtonProps {
@@ -7,6 +7,27 @@ interface SubmitButtonProps {
 }
 
 const SubmitButton: React.FC<SubmitButtonProps> = ({ isLoading }) => {
+  const [currentMessage, setCurrentMessage] = useState(0);
+  const loadingMessages = [
+    "Processing your application...",
+    "Analyzing your details...",
+    "Calculating your chances...",
+    "Generating your report..."
+  ];
+
+  useEffect(() => {
+    if (!isLoading) {
+      setCurrentMessage(0);
+      return;
+    }
+
+    const interval = setInterval(() => {
+      setCurrentMessage((prev) => (prev + 1) % loadingMessages.length);
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [isLoading, loadingMessages.length]);
+
   return (
     <div className="pt-6 flex justify-center">
       <button
@@ -17,7 +38,7 @@ const SubmitButton: React.FC<SubmitButtonProps> = ({ isLoading }) => {
         {isLoading ? (
           <>
             <Loader2 size={20} className="mr-2 animate-spin" />
-            Processing...
+            {loadingMessages[currentMessage]}
           </>
         ) : (
           <>

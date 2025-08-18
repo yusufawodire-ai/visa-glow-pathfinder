@@ -8,6 +8,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { getEvaluationResult } from '@/lib/supabase';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { MessageFormatter } from '@/components/MessageFormatter';
+import { TypingIndicator } from '@/components/TypingIndicator';
 
 interface EvaluationResult {
   score: string | number;
@@ -390,7 +391,7 @@ const ResultPage = () => {
               {isLoading && (
                 <div className="flex justify-start">
                   <div className="bg-visa-navy text-white max-w-[80%] rounded-lg p-3">
-                    <Loader2 size={20} className="animate-spin" />
+                    <TypingIndicator />
                   </div>
                 </div>
               )}
