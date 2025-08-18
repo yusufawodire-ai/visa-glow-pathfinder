@@ -36,7 +36,7 @@ async function processWebhookRequest(
   try {
     // Add a timeout to the fetch call to prevent hanging indefinitely
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
     
     console.log('Webhook URL:', 'https://igta.app.n8n.cloud/webhook-test/DETAILS_SUBMISSION_WEBHOOK');
     const response = await fetch('https://igta.app.n8n.cloud/webhook-test/DETAILS_SUBMISSION_WEBHOOK', {
