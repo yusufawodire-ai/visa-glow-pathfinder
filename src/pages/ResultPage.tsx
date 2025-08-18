@@ -28,6 +28,7 @@ const ResultPage = () => {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [currentMessage, setCurrentMessage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [isChatLoading, setIsChatLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [chatError, setChatError] = useState<string | null>(null);
   const [sessionId] = useState(`user-${Math.random().toString(36).substring(2, 15)}`);
@@ -158,9 +159,7 @@ const ResultPage = () => {
     const userMessage = currentMessage.trim();
     setCurrentMessage('');
     setChatMessages((prev) => [...prev, { sender: 'You', message: userMessage }]);
-    
-    // Show a temporary loading message
-    setChatMessages((prev) => [...prev, { sender: 'AI', message: '...' }]);
+    setIsChatLoading(true);
 
     try {
       console.log('Sending user message to USER_MESSAGE_OUTPUT_WEBHOOK:', { 
@@ -215,25 +214,19 @@ const ResultPage = () => {
         throw new Error('Response format not recognized');
       }
 
-      // Replace the loading message with the actual response
-      setChatMessages((prev) => {
-        const newMessages = [...prev];
-        newMessages[newMessages.length - 1] = { sender: 'AI', message: aiResponse };
-        return newMessages;
-      });
+      // Add the AI response
+      setChatMessages((prev) => [...prev, { sender: 'AI', message: aiResponse }]);
       setChatError(null);
+      setIsChatLoading(false);
     } catch (error) {
       console.error('Error sending message:', error);
       setChatError("Could not send your message. Please try again.");
 
       const defaultResponse = "I'm sorry, I couldn't process your message right now. Please try again or rephrase your question.";
       
-      // Replace the loading message with error response
-      setChatMessages((prev) => {
-        const newMessages = [...prev];
-        newMessages[newMessages.length - 1] = { sender: 'AI', message: defaultResponse };
-        return newMessages;
-      });
+      // Add error response
+      setChatMessages((prev) => [...prev, { sender: 'AI', message: defaultResponse }]);
+      setIsChatLoading(false);
 
       toast({
         title: "Message failed",
@@ -388,7 +381,7 @@ const ResultPage = () => {
                   </div>
                 </div>
               ))}
-              {isLoading && (
+              {isChatLoading && (
                 <div className="flex justify-start">
                   <div className="bg-visa-navy text-white max-w-[80%] rounded-lg p-3">
                     <TypingIndicator />
@@ -407,14 +400,14 @@ const ResultPage = () => {
               value={currentMessage}
               onChange={(e) => setCurrentMessage(e.target.value)}
               onKeyDown={handleKeyPress}
-              disabled={isLoading}
+              disabled={isChatLoading}
             />
             <Button
               onClick={sendMessage}
               className="bg-visa-gold hover:bg-visa-gold/80 text-black h-10 w-10 rounded-full p-0 flex-shrink-0"
-              disabled={isLoading || !currentMessage.trim()}
+              disabled={isChatLoading || !currentMessage.trim()}
             >
-              {isLoading ? (
+              {isChatLoading ? (
                 <Loader2 size={20} className="animate-spin" />
               ) : (
                 <SendHorizontal size={20} />
