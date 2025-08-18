@@ -167,7 +167,7 @@ const ResultPage = () => {
         evaluationId: evaluationResult?.evaluationId || 'no-id'
       });
       
-      const response = await fetch('https://igta.app.n8n.cloud/webhook-test/USER_MESSAGE_OUTPUT_WEBHOOK', {
+      const response = await fetch('https://igta.app.n8n.cloud/webhook/USER_MESSAGE_OUTPUT_WEBHOOK', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
