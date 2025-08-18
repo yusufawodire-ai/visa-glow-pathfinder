@@ -199,7 +199,11 @@ const ResultPage = () => {
       }
 
       let aiResponse;
-      if (jsonResponse.response) {
+      if (Array.isArray(jsonResponse) && jsonResponse[0]?.output) {
+        aiResponse = jsonResponse[0].output;
+      } else if (jsonResponse.output) {
+        aiResponse = jsonResponse.output;
+      } else if (jsonResponse.response) {
         aiResponse = jsonResponse.response;
       } else if (jsonResponse.message) {
         aiResponse = jsonResponse.message;
