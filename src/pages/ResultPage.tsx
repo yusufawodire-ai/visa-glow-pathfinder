@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { getEvaluationResult } from '@/lib/supabase';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { MessageFormatter } from '@/components/MessageFormatter';
 
 interface EvaluationResult {
   score: string | number;
@@ -379,7 +380,10 @@ const ResultPage = () => {
                         AI Assistant
                       </div>
                     )}
-                    <p className="whitespace-pre-line">{msg.message}</p>
+                    <MessageFormatter 
+                      content={msg.message} 
+                      isAI={msg.sender === 'AI'} 
+                    />
                   </div>
                 </div>
               ))}
