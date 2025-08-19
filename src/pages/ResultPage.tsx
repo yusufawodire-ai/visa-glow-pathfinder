@@ -147,9 +147,11 @@ const ResultPage = () => {
       }
       console.log('Raw USER_MESSAGE_OUTPUT_WEBHOOK response:', rawResponse);
 
+      // The edge function returns the webhook response as text, so we need to parse it
       let jsonResponse;
       try {
-        jsonResponse = JSON.parse(rawResponse);
+        // rawResponse is a string that needs to be parsed
+        jsonResponse = typeof rawResponse === 'string' ? JSON.parse(rawResponse) : rawResponse;
         console.log('Parsed USER_MESSAGE_OUTPUT_WEBHOOK response:', jsonResponse);
       } catch (parseError) {
         console.error('Error parsing message webhook response:', parseError);
