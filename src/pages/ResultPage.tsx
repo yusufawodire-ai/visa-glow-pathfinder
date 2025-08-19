@@ -65,13 +65,9 @@ const ResultPage = () => {
       }]);
       setIsLoading(false);
 
-      // Send context to backend in background (non-blocking)
+      // Fetch additional details if evaluation ID exists
       if (result.evaluationId) {
         fetchEvaluationFromStorage(result.evaluationId.toString());
-      } else {
-        // Send context to backend without blocking UI
-        console.log('No evaluationId found, sending context to backend');
-        sendContextToBackend(result);
       }
     } catch (error) {
       console.error('Error parsing stored result:', error);
@@ -98,15 +94,8 @@ const ResultPage = () => {
           evaluationId: supabaseResult.id
         };
         setEvaluationResult(formattedResult);
-        // Send context to backend in background (non-blocking)
-        sendContextToBackend(formattedResult);
       } else {
         console.warn('No evaluation found with ID:', id);
-        if (evaluationResult?.score && evaluationResult?.overview) {
-          sendContextToBackend(evaluationResult);
-        } else {
-          console.error('Evaluation not found in database');
-        }
       }
     } catch (error) {
       console.error('Error fetching evaluation:', error);
@@ -118,39 +107,6 @@ const ResultPage = () => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages]);
 
-  // Send context to backend without blocking UI
-  const sendContextToBackend = async (result: EvaluationResult) => {
-    try {
-      console.log('Sending context to backend with evaluation result:', result);
-      
-      const initResponse = await fetch('https://igta.app.n8n.cloud/webhook-test/START_CHAT_OUTPUT_WEBHOOK', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          sessionId,
-          context: result,
-          evaluationId: result.evaluationId || 'no-id',
-          score: result.score,
-          overview: result.overview
-        }),
-        signal: AbortSignal.timeout(15000),
-      });
-
-      if (!initResponse.ok) {
-        console.warn(`Failed to send context to backend. Status: ${initResponse.status}`);
-        return;
-      }
-
-      const initResponseText = await initResponse.text();
-      console.log('Context sent to backend successfully:', initResponseText);
-      
-    } catch (error) {
-      console.error('Error sending context to backend:', error);
-      // Don't show error to user since this is background operation
-    }
-  };
 
 
   const sendMessage = async () => {
