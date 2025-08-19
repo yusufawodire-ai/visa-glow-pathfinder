@@ -90,7 +90,8 @@ async function processWebhookRequest(
     
     let jsonResponse;
     try {
-      jsonResponse = JSON.parse(rawResponse);
+      // The edge function returns the webhook response, check if it needs parsing
+      jsonResponse = typeof rawResponse === 'string' ? JSON.parse(rawResponse) : rawResponse;
       console.log('Parsed webhook response:', jsonResponse);
     } catch (parseError) {
       console.error('Error parsing webhook response:', parseError, 'Raw response:', rawResponse);
