@@ -101,12 +101,21 @@ serve(async (req) => {
     const responseText = await response.text();
     console.log('Webhook response received, length:', responseText.length);
 
-    // Return the response
-    return new Response(responseText, {
+    // Parse JSON if the response is JSON
+    let responseData;
+    try {
+      responseData = JSON.parse(responseText);
+    } catch (parseError) {
+      console.error('Failed to parse webhook response as JSON:', parseError);
+      responseData = responseText; // Return as text if not JSON
+    }
+
+    // Return the parsed response as JSON
+    return new Response(JSON.stringify(responseData), {
       status: response.status,
       headers: { 
         ...corsHeaders, 
-        'Content-Type': response.headers.get('Content-Type') || 'text/plain' 
+        'Content-Type': 'application/json'
       },
     });
 
