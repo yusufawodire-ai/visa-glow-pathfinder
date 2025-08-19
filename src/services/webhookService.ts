@@ -1,5 +1,6 @@
 
 import { storeEvaluationResult } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { 
   fallbackData,
   parseWebhookResponse,
@@ -34,26 +35,52 @@ async function processWebhookRequest(
   const { name, email, phone, visaType } = userData;
   
   try {
-    // Add a timeout to the fetch call to prevent hanging indefinitely
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
+    // Convert FormData to a format that can be sent through our secure edge function
+    const formDataObject: any = {};
+    const files: any[] = [];
     
-    console.log('Webhook URL:', 'https://igta.app.n8n.cloud/webhook/DETAILS_SUBMISSION_WEBHOOK');
-    const response = await fetch('https://igta.app.n8n.cloud/webhook/DETAILS_SUBMISSION_WEBHOOK', {
-      method: 'POST',
-      body: formData,
-      signal: controller.signal
-    });
-    
-    clearTimeout(timeoutId);
-    console.log('Webhook response status:', response.status);
-    
-    if (!response.ok) {
-      console.error(`HTTP error! Status: ${response.status}`);
-      throw new Error(`HTTP error! Status: ${response.status}`);
+    // Extract form data
+    for (const [key, value] of formData.entries()) {
+      if (value instanceof File) {
+        // Convert file to base64
+        const arrayBuffer = await value.arrayBuffer();
+        const uint8Array = new Uint8Array(arrayBuffer);
+        const binaryString = Array.from(uint8Array)
+          .map(byte => String.fromCharCode(byte))
+          .join('');
+        const base64Data = btoa(binaryString);
+        
+        files.push({
+          name: value.name,
+          type: value.type,
+          data: base64Data
+        });
+      } else {
+        formDataObject[key] = value;
+      }
     }
     
-    const rawResponse = await response.text();
+    // Add files to the form data object
+    if (files.length > 0) {
+      formDataObject.files = files;
+    }
+    
+    console.log('Sending secure webhook request for evaluation submission');
+    
+    // Use our secure edge function to proxy the request
+    const { data: rawResponse, error } = await supabase.functions.invoke('secure-webhook', {
+      body: {
+        webhookUrl: 'https://igta.app.n8n.cloud/webhook/DETAILS_SUBMISSION_WEBHOOK',
+        method: 'POST',
+        body: formDataObject,
+        isFormData: true
+      }
+    });
+    
+    if (error) {
+      console.error('Supabase function error:', error);
+      throw new Error(`Secure webhook call failed: ${error.message}`);
+    }
     console.log('Raw webhook response:', rawResponse);
     
     // Handle empty response

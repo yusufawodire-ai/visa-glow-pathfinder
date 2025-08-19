@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { getEvaluationResult } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { MessageFormatter } from '@/components/MessageFormatter';
 import { TypingIndicator } from '@/components/TypingIndicator';
@@ -124,26 +125,26 @@ const ResultPage = () => {
         evaluationId: evaluationResult?.evaluationId || 'no-id'
       });
       
-      const response = await fetch('https://igta.app.n8n.cloud/webhook/USER_MESSAGE_OUTPUT_WEBHOOK', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          sessionId,
-          message: userMessage,
-          evaluationId: evaluationResult?.evaluationId || 'no-id',
-          score: evaluationResult?.score,
-          overview: evaluationResult?.overview
-        }),
-        signal: AbortSignal.timeout(30000),
+      // Use our secure edge function to proxy the request
+      const { data: rawResponse, error } = await supabase.functions.invoke('secure-webhook', {
+        body: {
+          webhookUrl: 'https://igta.app.n8n.cloud/webhook/USER_MESSAGE_OUTPUT_WEBHOOK',
+          method: 'POST',
+          body: {
+            sessionId,
+            message: userMessage,
+            evaluationId: evaluationResult?.evaluationId || 'no-id',
+            score: evaluationResult?.score,
+            overview: evaluationResult?.overview
+          },
+          isFormData: false
+        }
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw new Error(`Secure webhook call failed: ${error.message}`);
       }
-
-      const rawResponse = await response.text();
       console.log('Raw USER_MESSAGE_OUTPUT_WEBHOOK response:', rawResponse);
 
       let jsonResponse;
