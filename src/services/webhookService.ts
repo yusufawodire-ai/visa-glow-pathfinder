@@ -84,7 +84,7 @@ async function processWebhookRequest(
     console.log('Raw webhook response:', rawResponse);
     
     // Handle empty response
-    if (!rawResponse || rawResponse.trim() === '') {
+    if (!rawResponse || (typeof rawResponse === 'string' && rawResponse.trim() === '') || (typeof rawResponse === 'object' && Object.keys(rawResponse).length === 0)) {
       return handleEmptyResponse(name, email, phone, visaType);
     }
     
