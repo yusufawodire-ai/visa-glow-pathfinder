@@ -101,13 +101,57 @@ serve(async (req) => {
     const responseText = await response.text();
     console.log('Webhook response received, length:', responseText.length);
 
-    // Parse JSON if the response is JSON
+    // Handle streaming responses - extract the last complete JSON object
     let responseData;
-    try {
-      responseData = JSON.parse(responseText);
-    } catch (parseError) {
-      console.error('Failed to parse webhook response as JSON:', parseError);
-      responseData = responseText; // Return as text if not JSON
+    if (responseText.includes('\n') || responseText.includes('}{')) {
+      console.log('Detected streaming response, extracting final JSON');
+      
+      // Split by newlines and find the last complete JSON
+      const lines = responseText.split('\n').filter(line => line.trim());
+      let lastValidJson = null;
+      
+      for (let i = lines.length - 1; i >= 0; i--) {
+        try {
+          const parsed = JSON.parse(lines[i]);
+          lastValidJson = parsed;
+          break;
+        } catch (e) {
+          // Continue to previous line
+          continue;
+        }
+      }
+      
+      if (lastValidJson) {
+        console.log('Successfully extracted final JSON from stream');
+        responseData = lastValidJson;
+      } else {
+        // If no valid JSON found in lines, try extracting from concatenated JSON objects
+        const jsonObjects = responseText.split('}{');
+        if (jsonObjects.length > 1) {
+          try {
+            // Take the last complete JSON object
+            const lastJson = jsonObjects[jsonObjects.length - 1];
+            const finalJson = lastJson.startsWith('{') ? lastJson : `{${lastJson}`;
+            const parsed = JSON.parse(finalJson);
+            console.log('Successfully extracted JSON from concatenated objects');
+            responseData = parsed;
+          } catch (e) {
+            console.error('Failed to parse concatenated JSON:', e);
+            responseData = { response: responseText, isRawText: true };
+          }
+        } else {
+          responseData = { response: responseText, isRawText: true };
+        }
+      }
+    } else {
+      // Try to parse as single JSON response
+      try {
+        responseData = JSON.parse(responseText);
+        console.log('Successfully parsed single JSON response');
+      } catch (parseError) {
+        console.error('Failed to parse webhook response as JSON:', parseError);
+        responseData = { response: responseText, isRawText: true };
+      }
     }
 
     // Return the parsed response as JSON

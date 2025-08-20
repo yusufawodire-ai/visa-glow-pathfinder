@@ -169,6 +169,12 @@ const ResultPage = () => {
         aiResponse = jsonResponse.message;
       } else if (jsonResponse.data && jsonResponse.data.response) {
         aiResponse = jsonResponse.data.response;
+      } else if (jsonResponse.isRawText && jsonResponse.response) {
+        // Handle raw text responses from streaming
+        aiResponse = jsonResponse.response;
+      } else if (typeof jsonResponse === 'string') {
+        // Handle direct string responses
+        aiResponse = jsonResponse;
       } else {
         throw new Error('Response format not recognized');
       }
