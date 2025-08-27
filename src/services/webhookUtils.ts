@@ -5,8 +5,8 @@
 
 // Mock data for fallback when webhook fails
 export const fallbackData = {
-  score: "75%",
-  overview: "This is a fallback evaluation generated because the webhook service is currently unavailable. Your application shows moderate strengths but could be improved in key areas. We recommend consulting with an immigration specialist for personalized guidance."
+  score: "0%",
+  overview: "Our system is temporarily unavailable as we perform maintenance. Please try again later to receive your full visa evaluation report.\n\nIn the meantime, you can still connect with our AI Assistant here in the chat to ask questions, receive guidance, and get support for your visa journey. We're here to help you while the service is being restored."
 };
 
 /**
