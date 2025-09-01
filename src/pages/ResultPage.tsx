@@ -10,11 +10,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { MessageFormatter } from '@/components/MessageFormatter';
 import { TypingIndicator } from '@/components/TypingIndicator';
-import { StructuredOverview } from '@/components/StructuredOverview';
 
 interface EvaluationResult {
   score: string | number;
-  overview: string | object;
+  overview: string;
   evaluationId?: string | number;
 }
 
@@ -90,21 +89,9 @@ const ResultPage = () => {
 
       if (supabaseResult) {
         console.log('Retrieved evaluation from storage:', supabaseResult);
-        
-        // Parse overview if it's a JSON string
-        let parsedOverview = supabaseResult.overview;
-        if (typeof supabaseResult.overview === 'string') {
-          try {
-            parsedOverview = JSON.parse(supabaseResult.overview);
-          } catch {
-            // If parsing fails, keep as string
-            parsedOverview = supabaseResult.overview;
-          }
-        }
-        
         const formattedResult: EvaluationResult = {
           score: supabaseResult.score,
-          overview: parsedOverview,
+          overview: supabaseResult.overview,
           evaluationId: supabaseResult.id
         };
         setEvaluationResult(formattedResult);
@@ -314,18 +301,8 @@ const ResultPage = () => {
               Overview
             </h2>
             
-            <div className="flex-grow overflow-auto">
-              {typeof evaluationResult.overview === 'object' && 
-               evaluationResult.overview !== null &&
-               'evaluationSummary' in evaluationResult.overview &&
-               'categories' in evaluationResult.overview &&
-               'recommendations' in evaluationResult.overview ? (
-                <StructuredOverview overview={evaluationResult.overview as any} />
-              ) : (
-                <div className="prose prose-invert">
-                  <p className="text-white whitespace-pre-line">{evaluationResult.overview as string}</p>
-                </div>
-              )}
+            <div className="prose prose-invert flex-grow overflow-auto">
+              <p className="text-white whitespace-pre-line">{evaluationResult.overview}</p>
             </div>
           </div>
         ) : null}

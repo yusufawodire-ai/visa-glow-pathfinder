@@ -117,9 +117,7 @@ async function processWebhookRequest(
       phone: phone || undefined,
       visa_type: visaType,
       score: scoreValue,
-      overview: typeof evaluationResult.summary === 'object' 
-        ? JSON.stringify(evaluationResult.summary) 
-        : evaluationResult.summary || '',
+      overview: evaluationResult.summary || '',
       user_id: crypto.randomUUID(),
     });
     
@@ -151,9 +149,7 @@ async function handleEmptyResponse(name: string, email: string, phone: string | 
     phone: phone || undefined,
     visa_type: visaType,
     score: scoreValue,
-    overview: typeof fallbackData.overview === 'object' 
-      ? JSON.stringify(fallbackData.overview) 
-      : fallbackData.overview || '',
+    overview: fallbackData.overview || '',
     user_id: crypto.randomUUID(),
   });
   
@@ -162,9 +158,7 @@ async function handleEmptyResponse(name: string, email: string, phone: string | 
   return createResultObject(
     storedResult?.id,
     fallbackData.score,
-    typeof fallbackData.overview === 'object' 
-      ? JSON.stringify(fallbackData.overview) 
-      : fallbackData.overview || ''
+    fallbackData.overview || ''
   );
 }
 
@@ -190,9 +184,7 @@ async function handleErrorWithFallback(
       phone: phone || undefined,
       visa_type: visaType,
       score: scoreValue,
-      overview: typeof fallbackData.overview === 'object' 
-        ? JSON.stringify(fallbackData.overview) 
-        : fallbackData.overview || '',
+      overview: fallbackData.overview || '',
       user_id: crypto.randomUUID(),
     });
     
@@ -201,9 +193,7 @@ async function handleErrorWithFallback(
     return createResultObject(
       storedResult?.id,
       fallbackData.score,
-      typeof fallbackData.overview === 'object' 
-        ? JSON.stringify(fallbackData.overview) 
-        : fallbackData.overview || ''
+      fallbackData.overview || ''
     );
   } catch (dbError) {
     console.error('Error storing fallback result:', dbError);
@@ -212,9 +202,7 @@ async function handleErrorWithFallback(
     return createResultObject(
       undefined,
       fallbackData.score,
-      typeof fallbackData.overview === 'object' 
-        ? JSON.stringify(fallbackData.overview) 
-        : fallbackData.overview || ''
+      fallbackData.overview || ''
     );
   }
 }
