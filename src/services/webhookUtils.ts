@@ -27,12 +27,20 @@ export const parseWebhookResponse = (jsonResponse: any) => {
     }
   }
   
-  // Handle array format [{ output: { score: string, overview: string } }]
+  // Handle array format [{ score: string, overview: string }] (new format)
   if (Array.isArray(jsonResponse) && jsonResponse.length > 0) {
     const firstResult = jsonResponse[0];
     console.log('Processing array response, first item:', firstResult);
     
-    // Check for nested output object
+    // Check for direct properties (new format)
+    if ('score' in firstResult && 'overview' in firstResult) {
+      return {
+        score: firstResult.score,
+        summary: firstResult.overview
+      };
+    }
+    
+    // Check for nested output object (legacy format)
     if (firstResult.output && 'score' in firstResult.output && 'overview' in firstResult.output) {
       return {
         score: firstResult.output.score,
@@ -40,7 +48,7 @@ export const parseWebhookResponse = (jsonResponse: any) => {
       };
     }
     
-    // Check for direct properties
+    // Check for legacy direct properties with summary field
     if ('score' in firstResult) {
       return {
         score: firstResult.score,
@@ -50,7 +58,7 @@ export const parseWebhookResponse = (jsonResponse: any) => {
       console.error('Invalid response structure in array:', jsonResponse);
       throw new Error('Invalid response structure in array');
     }
-  } 
+  }
   // Handle direct object format { score: string|number, summary/overview: string }
   else if (jsonResponse && typeof jsonResponse === 'object' && 'score' in jsonResponse) {
     console.log('Processing object response:', jsonResponse);
