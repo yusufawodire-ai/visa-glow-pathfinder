@@ -6,7 +6,15 @@
 // Mock data for fallback when webhook fails
 export const fallbackData = {
   score: "0%",
-  overview: "Our system is temporarily unavailable as we perform maintenance. Please try again later to receive your full visa evaluation report.\n\nIn the meantime, you can still connect with our AI Assistant here in the chat to ask questions, receive guidance, and get support for your visa journey. We're here to help you while the service is being restored."
+  overview: {
+    evaluationSummary: "Our system is temporarily unavailable as we perform maintenance. Please try again later to receive your full visa evaluation report.",
+    categories: [],
+    recommendations: {
+      nextSteps: [
+        "In the meantime, you can still connect with our AI Assistant here in the chat to ask questions, receive guidance, and get support for your visa journey. We're here to help you while the service is being restored."
+      ]
+    }
+  }
 };
 
 /**
@@ -27,13 +35,21 @@ export const parseWebhookResponse = (jsonResponse: any) => {
     }
   }
   
-  // Handle array format [{ score: string, overview: string }] (new format)
+  // Handle array format [{ score: string, overview: string|object }] (new format)
   if (Array.isArray(jsonResponse) && jsonResponse.length > 0) {
     const firstResult = jsonResponse[0];
     console.log('Processing array response, first item:', firstResult);
     
     // Check for direct properties (new format)
     if ('score' in firstResult && 'overview' in firstResult) {
+      // Handle structured overview object (new format)
+      if (typeof firstResult.overview === 'object' && firstResult.overview !== null) {
+        return {
+          score: firstResult.score,
+          summary: firstResult.overview
+        };
+      }
+      // Handle string overview (legacy format)
       return {
         score: firstResult.score,
         summary: firstResult.overview
