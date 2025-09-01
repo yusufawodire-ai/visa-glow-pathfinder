@@ -302,7 +302,7 @@ const ResultPage = () => {
             </h2>
             
             <div className="prose prose-invert flex-grow overflow-auto">
-              <p className="text-white whitespace-pre-line">{evaluationResult.overview}</p>
+              <MessageFormatter content={evaluationResult.overview} isAI={true} />
             </div>
           </div>
         ) : null}
