@@ -119,7 +119,7 @@ const ResultPage = () => {
     setIsChatLoading(true);
 
     try {
-      console.log('Sending user message to USER_MESSAGE_OUTPUT_WEBHOOK:', { 
+      console.log('Sending user message to chat webhook:', { 
         sessionId, 
         message: userMessage,
         evaluationId: evaluationResult?.evaluationId || 'no-id'
@@ -128,14 +128,15 @@ const ResultPage = () => {
       // Use our secure edge function to proxy the request
       const { data: rawResponse, error } = await supabase.functions.invoke('secure-webhook', {
         body: {
-          webhookUrl: 'https://igta.app.n8n.cloud/webhook/USER_MESSAGE_OUTPUT_WEBHOOK',
+          webhookUrl: 'https://igta.app.n8n.cloud/webhook/7422a6c7-f3cb-4058-ac64-0383fbc2d816/chat',
           method: 'POST',
           body: {
             sessionId,
             message: userMessage,
             evaluationId: evaluationResult?.evaluationId || 'no-id',
             score: evaluationResult?.score,
-            overview: evaluationResult?.overview
+            overview: evaluationResult?.overview,
+            stream: true
           },
           isFormData: false
         }
@@ -145,14 +146,14 @@ const ResultPage = () => {
         console.error('Supabase function error:', error);
         throw new Error(`Secure webhook call failed: ${error.message}`);
       }
-      console.log('Raw USER_MESSAGE_OUTPUT_WEBHOOK response:', rawResponse);
+      console.log('Raw chat webhook response:', rawResponse);
 
       // The edge function returns the webhook response as text, so we need to parse it
       let jsonResponse;
       try {
         // rawResponse is a string that needs to be parsed
         jsonResponse = typeof rawResponse === 'string' ? JSON.parse(rawResponse) : rawResponse;
-        console.log('Parsed USER_MESSAGE_OUTPUT_WEBHOOK response:', jsonResponse);
+        console.log('Parsed chat webhook response:', jsonResponse);
       } catch (parseError) {
         console.error('Error parsing message webhook response:', parseError);
         throw new Error('Invalid JSON response from message webhook');
