@@ -15,11 +15,22 @@ export const fallbackData = {
 export const parseWebhookResponse = (jsonResponse: any) => {
   console.log('Parsing response:', jsonResponse);
   
-  // Handle nested output object format { output: { score: string, overview: string } }
+  // Handle nested output object format { output: { score: string, overview: string } } or { output: [{ score: string, overview: string }] }
   if (jsonResponse && typeof jsonResponse === 'object' && jsonResponse.output) {
     console.log('Processing nested output response:', jsonResponse.output);
     
-    if ('score' in jsonResponse.output && 'overview' in jsonResponse.output) {
+    // Handle output as array format
+    if (Array.isArray(jsonResponse.output) && jsonResponse.output.length > 0) {
+      const firstOutput = jsonResponse.output[0];
+      if ('score' in firstOutput && 'overview' in firstOutput) {
+        return {
+          score: firstOutput.score,
+          summary: firstOutput.overview
+        };
+      }
+    }
+    // Handle output as direct object format
+    else if ('score' in jsonResponse.output && 'overview' in jsonResponse.output) {
       return {
         score: jsonResponse.output.score,
         summary: jsonResponse.output.overview
