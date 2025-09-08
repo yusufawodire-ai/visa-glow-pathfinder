@@ -8,7 +8,7 @@ interface MessageFormatterProps {
 
 export const MessageFormatter = ({ content, isAI, textColor = "text-white" }: MessageFormatterProps) => {
   if (!isAI) {
-    // Keep user messages as plain text with line breaks
+    // Keep user messages as plain text with line breaks, use the provided textColor
     return <p className={`whitespace-pre-line ${textColor}`}>{content}</p>;
   }
 
