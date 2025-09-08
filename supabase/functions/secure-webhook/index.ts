@@ -192,8 +192,26 @@ serve(async (req) => {
     } else {
       // Try to parse as single JSON response
       try {
-        responseData = JSON.parse(responseText);
-        console.log('Successfully parsed single JSON response:', responseData);
+        const jsonResponse = JSON.parse(responseText);
+        console.log('Successfully parsed single JSON response:', jsonResponse);
+        
+        // Extract the message content from the JSON response and format consistently
+        let messageContent;
+        if (jsonResponse.output) {
+          messageContent = jsonResponse.output;
+        } else if (jsonResponse.message) {
+          messageContent = jsonResponse.message;
+        } else if (jsonResponse.content) {
+          messageContent = jsonResponse.content;
+        } else if (jsonResponse.response) {
+          messageContent = jsonResponse.response;
+        } else {
+          // If no recognized field, stringify the entire response
+          messageContent = JSON.stringify(jsonResponse);
+        }
+        
+        // Return in consistent format expected by frontend
+        responseData = { response: messageContent };
       } catch (parseError) {
         console.error('Failed to parse webhook response as JSON:', parseError);
         responseData = { response: responseText, isRawText: true };
