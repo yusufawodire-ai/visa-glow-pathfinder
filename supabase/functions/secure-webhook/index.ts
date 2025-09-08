@@ -108,7 +108,9 @@ serve(async (req) => {
       console.log('Successfully parsed JSON response:', jsonResponse);
       
       // Extract the message content from the JSON response
-      if (jsonResponse.message) {
+      if (jsonResponse.output) {
+        responseData = jsonResponse.output;
+      } else if (jsonResponse.message) {
         responseData = jsonResponse.message;
       } else if (jsonResponse.content) {
         responseData = jsonResponse.content;
