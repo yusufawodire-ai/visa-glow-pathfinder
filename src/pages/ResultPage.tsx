@@ -160,7 +160,10 @@ const ResultPage = () => {
       }
 
       let aiResponse;
-      if (Array.isArray(jsonResponse) && jsonResponse[0]?.output) {
+      if (jsonResponse.content) {
+        // Handle streaming response format with content field
+        aiResponse = jsonResponse.content;
+      } else if (Array.isArray(jsonResponse) && jsonResponse[0]?.output) {
         aiResponse = jsonResponse[0].output;
       } else if (jsonResponse.output) {
         aiResponse = jsonResponse.output;
@@ -331,7 +334,7 @@ const ResultPage = () => {
                   <div
                     className={`max-w-[80%] rounded-lg p-3 ${
                       msg.sender === 'You'
-                        ? 'bg-visa-gold text-black'
+                        ? 'bg-visa-gold'
                         : 'bg-visa-navy text-white'
                     }`}
                   >
@@ -340,10 +343,12 @@ const ResultPage = () => {
                         AI Assistant
                       </div>
                     )}
-                    <MessageFormatter 
-                      content={msg.message} 
-                      isAI={msg.sender === 'AI'} 
-                    />
+                    <div className={msg.sender === 'You' ? 'text-black' : ''}>
+                      <MessageFormatter 
+                        content={msg.message} 
+                        isAI={msg.sender === 'AI'} 
+                      />
+                    </div>
                   </div>
                 </div>
               ))}
