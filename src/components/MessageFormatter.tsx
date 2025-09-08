@@ -6,11 +6,19 @@ interface MessageFormatterProps {
   textColor?: string;
 }
 
+const preprocessMarkdown = (content: string): string => {
+  // Convert lines with emojis and section headers to proper markdown headings
+  return content.replace(/^(🏆|👥|📰|💼|🚀|🏢|⏳|📞)\s+([^(]+)(\([^)]*\))?$/gm, '## $1 $2$3');
+};
+
 export const MessageFormatter = ({ content, isAI, textColor = "text-white" }: MessageFormatterProps) => {
   if (!isAI) {
     // Keep user messages as plain text with line breaks, use the provided textColor
     return <p className={`whitespace-pre-line ${textColor}`}>{content}</p>;
   }
+
+  // Preprocess content to convert emoji sections to markdown headings
+  const processedContent = preprocessMarkdown(content);
 
   // Render AI messages with Markdown parsing
   return (
@@ -38,7 +46,7 @@ export const MessageFormatter = ({ content, isAI, textColor = "text-white" }: Me
         ),
         }}
       >
-        {content}
+        {processedContent}
       </ReactMarkdown>
     </div>
   );

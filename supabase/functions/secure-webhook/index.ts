@@ -99,67 +99,16 @@ serve(async (req) => {
 
     let responseData;
 
-    // Always process as streaming for now
-    if (response.body) {
-      console.log('Processing streaming response...');
-      
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let accumulatedContent = '';
-
-      try {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          const chunk = decoder.decode(value, { stream: true });
-          accumulatedContent += chunk;
-          
-          console.log(`Received streaming chunk: ${chunk.substring(0, 100)}...`);
-        }
-
-        console.log('Stream processing complete. Accumulated content:', accumulatedContent);
-
-        // Try to extract meaningful content from the stream
-        const lines = accumulatedContent.split('\n').filter(line => line.trim());
-        let messageContent = '';
-        
-        for (const line of lines) {
-          const trimmedLine = line.trim();
-          if (!trimmedLine) continue;
-
-          // Try to parse as JSON first
-          try {
-            const jsonData = JSON.parse(trimmedLine);
-            console.log(`Parsed JSON data:`, jsonData);
-            
-            // Extract content from various formats
-            if (jsonData.content) {
-              messageContent += jsonData.content;
-            } else if (jsonData.message) {
-              messageContent += jsonData.message;
-            } else if (jsonData.response) {
-              messageContent += jsonData.response;
-            } else if (typeof jsonData === 'string') {
-              messageContent += jsonData;
-            }
-          } catch (e) {
-            // Not JSON, treat as plain text
-            console.log(`Plain text line: ${trimmedLine}`);
-            messageContent += trimmedLine + ' ';
-          }
-        }
-
-        // Return the accumulated message content
-        responseData = messageContent.trim() || accumulatedContent.trim();
-
-      } catch (streamError) {
-        console.error('Error reading stream:', streamError);
-        responseData = 'Sorry, there was an error processing the streaming response.';
-      }
-    } else {
-      console.log('No response body received');
-      responseData = 'No response content received';
+    // Process as regular JSON response (no streaming)
+    console.log('Processing regular JSON response...');
+    try {
+      const responseText = await response.text();
+      console.log('Raw response text:', responseText);
+      responseData = JSON.parse(responseText);
+      console.log('Successfully parsed JSON response:', responseData);
+    } catch (parseError) {
+      console.error('Failed to parse webhook response as JSON:', parseError);
+      responseData = responseText || 'No response content received';
     }
 
     console.log('Final response data being returned:', responseData);
