@@ -99,11 +99,9 @@ serve(async (req) => {
 
     let responseData;
 
-    // Check if this is a streaming endpoint (chat) vs regular endpoint (evaluation)
-    const isStreamingEndpoint = webhookUrl.includes('/chat') || webhookUrl.includes('llm-chat');
-    
-    if (isStreamingEndpoint && response.body) {
-      console.log('Detected streaming endpoint, processing stream...');
+    // Always process as streaming for now
+    if (response.body) {
+      console.log('Processing streaming response...');
       
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
@@ -160,17 +158,8 @@ serve(async (req) => {
         responseData = 'Sorry, there was an error processing the streaming response.';
       }
     } else {
-      // Non-streaming response (evaluation)
-      console.log('Processing non-streaming response...');
-      try {
-        const responseText = await response.text();
-        console.log('Raw response text:', responseText);
-        responseData = JSON.parse(responseText);
-        console.log('Successfully parsed JSON response:', responseData);
-      } catch (parseError) {
-        console.error('Failed to parse webhook response as JSON:', parseError);
-        responseData = responseText || 'No response content received';
-      }
+      console.log('No response body received');
+      responseData = 'No response content received';
     }
 
     console.log('Final response data being returned:', responseData);

@@ -134,7 +134,7 @@ const ResultPage = () => {
       // Use our secure edge function to proxy the request
       const { data: rawResponse, error } = await supabase.functions.invoke('secure-webhook', {
         body: {
-          webhookUrl: "https://igta.app.n8n.cloud/webhook/7422a6c7-f3cb-4058-ac64-0383fbc2d816/chat",
+          webhookUrl: "https://igta.app.n8n.cloud/webhook/7422a6c7-f3cb-4058-ac64-0383fbc2d816",
           method: 'POST',
           body: {
             user_message: userMessage,
