@@ -79,7 +79,7 @@ serve(async (req) => {
     // Make the request to the actual webhook with API key
     console.log('Making authenticated request with headers:', Object.keys(headers));
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 100000); // 100 second timeout
+    const timeoutId = setTimeout(() => controller.abort(), 120000); // 120 second timeout
     
     const response = await fetch(webhookUrl, {
       method,
