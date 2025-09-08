@@ -3,12 +3,13 @@ import ReactMarkdown from 'react-markdown';
 interface MessageFormatterProps {
   content: string;
   isAI: boolean;
+  textColor?: string;
 }
 
-export const MessageFormatter = ({ content, isAI }: MessageFormatterProps) => {
+export const MessageFormatter = ({ content, isAI, textColor = "text-white" }: MessageFormatterProps) => {
   if (!isAI) {
     // Keep user messages as plain text with line breaks
-    return <p className="whitespace-pre-line text-white">{content}</p>;
+    return <p className={`whitespace-pre-line ${textColor}`}>{content}</p>;
   }
 
   // Render AI messages with Markdown parsing

@@ -97,14 +97,67 @@ serve(async (req) => {
       throw new Error(`Webhook HTTP error! Status: ${response.status}`);
     }
 
-    // Get the response
-    const responseText = await response.text();
-    console.log('Webhook response received, length:', responseText.length);
-    console.log('Full webhook response text:', responseText);
+    // Handle streaming response
+    if (response.body && (
+      response.headers.get('content-type')?.includes('text/plain') || 
+      response.headers.get('content-type')?.includes('text/event-stream') ||
+      response.headers.get('transfer-encoding') === 'chunked'
+    )) {
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let accumulatedContent = '';
+      let messageContent = '';
 
-    // Handle streaming responses - extract the actual message content, not just metadata
-    let responseData;
-    if (responseText.includes('\n') || responseText.includes('}{')) {
+      console.log('Detected streaming response, processing...');
+
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value, { stream: true });
+          accumulatedContent += chunk;
+          
+          console.log(`Received streaming chunk: ${chunk.substring(0, 100)}...`);
+
+          // Handle different streaming formats
+          const lines = chunk.split('\n');
+          for (const line of lines) {
+            const trimmedLine = line.trim();
+            if (!trimmedLine) continue;
+
+            // Try to parse as JSON (n8n streaming format)
+            try {
+              const jsonData = JSON.parse(trimmedLine);
+              console.log(`Parsed JSON data:`, jsonData);
+              
+              // Extract content from n8n streaming format
+              if (jsonData.type === 'item' && jsonData.content) {
+                messageContent += jsonData.content;
+                console.log(`Accumulated message content: ${messageContent.substring(0, 100)}...`);
+              }
+            } catch (e) {
+              // Not JSON, might be plain text streaming
+              console.log(`Plain text line: ${trimmedLine}`);
+              messageContent += trimmedLine + '\n';
+            }
+          }
+        }
+
+        console.log('Stream processing complete. Final message content:', messageContent);
+
+        // Return the accumulated message content
+        if (messageContent.trim()) {
+          responseData = messageContent.trim();
+        } else {
+          responseData = accumulatedContent.trim();
+        }
+
+      } catch (streamError) {
+        console.error('Error reading stream:', streamError);
+        responseData = 'Sorry, there was an error processing the streaming response.';
+      }
+    } else {
       console.log('Detected streaming response, extracting message content');
       
       // Split by newlines and find message content (not just metadata)
@@ -193,14 +246,14 @@ serve(async (req) => {
           isRawText: true 
         };
       }
-    } else {
       // Try to parse as single JSON response
       try {
-        responseData = JSON.parse(responseText);
+        responseData = JSON.parse(await response.text());
         console.log('Successfully parsed single JSON response:', responseData);
       } catch (parseError) {
+        const text = await response.text();
         console.error('Failed to parse webhook response as JSON:', parseError);
-        responseData = { response: responseText, isRawText: true };
+        responseData = text || 'No response content received';
       }
     }
 

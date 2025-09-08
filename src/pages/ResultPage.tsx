@@ -115,7 +115,13 @@ const ResultPage = () => {
 
     const userMessage = currentMessage.trim();
     setCurrentMessage('');
+    
+    // Add user message immediately
     setChatMessages((prev) => [...prev, { sender: 'You', message: userMessage }]);
+    
+    // Add empty AI message for streaming updates
+    const aiMessageIndex = chatMessages.length + 1;
+    setChatMessages((prev) => [...prev, { sender: 'AI', message: '' }]);
     setIsChatLoading(true);
 
     try {
@@ -128,15 +134,11 @@ const ResultPage = () => {
       // Use our secure edge function to proxy the request
       const { data: rawResponse, error } = await supabase.functions.invoke('secure-webhook', {
         body: {
-          webhookUrl: 'https://igta.app.n8n.cloud/webhook/7422a6c7-f3cb-4058-ac64-0383fbc2d816/chat',
+          webhookUrl: "https://sewardimmigration.app.n8n.cloud/webhook/llm-chat",
           method: 'POST',
           body: {
-            sessionId,
-            message: userMessage,
-            evaluationId: evaluationResult?.evaluationId || 'no-id',
-            score: evaluationResult?.score,
-            overview: evaluationResult?.overview,
-            stream: true
+            user_message: userMessage,
+            evaluation_context: evaluationResult
           },
           isFormData: false
         }
@@ -148,60 +150,55 @@ const ResultPage = () => {
       }
       console.log('Raw chat webhook response:', rawResponse);
 
-      // The edge function returns the webhook response as text, so we need to parse it
-      let jsonResponse;
-      try {
-        // rawResponse is a string that needs to be parsed
-        jsonResponse = typeof rawResponse === 'string' ? JSON.parse(rawResponse) : rawResponse;
-        console.log('Parsed chat webhook response:', jsonResponse);
-      } catch (parseError) {
-        console.error('Error parsing message webhook response:', parseError);
-        throw new Error('Invalid JSON response from message webhook');
+      // Handle the streaming response
+      let aiResponse = '';
+      
+      if (rawResponse) {
+        if (typeof rawResponse === 'string') {
+          aiResponse = rawResponse;
+        } else if (rawResponse.content) {
+          aiResponse = rawResponse.content;
+        } else if (rawResponse.message) {
+          aiResponse = rawResponse.message;
+        } else if (rawResponse.response) {
+          aiResponse = rawResponse.response;
+        } else {
+          aiResponse = JSON.stringify(rawResponse);
+        }
       }
 
-      let aiResponse;
-      if (jsonResponse.content) {
-        // Handle streaming response format with content field
-        aiResponse = jsonResponse.content;
-      } else if (Array.isArray(jsonResponse) && jsonResponse[0]?.output) {
-        aiResponse = jsonResponse[0].output;
-      } else if (jsonResponse.output) {
-        aiResponse = jsonResponse.output;
-      } else if (jsonResponse.response) {
-        aiResponse = jsonResponse.response;
-      } else if (jsonResponse.message) {
-        aiResponse = jsonResponse.message;
-      } else if (jsonResponse.data && jsonResponse.data.response) {
-        aiResponse = jsonResponse.data.response;
-      } else if (jsonResponse.isRawText && jsonResponse.response) {
-        // Handle raw text responses from streaming
-        aiResponse = jsonResponse.response;
-      } else if (typeof jsonResponse === 'string') {
-        // Handle direct string responses
-        aiResponse = jsonResponse;
-      } else {
-        throw new Error('Response format not recognized');
+      if (!aiResponse) {
+        aiResponse = "I'm sorry, I didn't receive a proper response. Please try again.";
       }
 
-      // Add the AI response
-      setChatMessages((prev) => [...prev, { sender: 'AI', message: aiResponse }]);
+      // Update the AI message with the complete response
+      setChatMessages((prev) => 
+        prev.map((msg, index) => 
+          index === aiMessageIndex ? { ...msg, message: aiResponse } : msg
+        )
+      );
+      
       setChatError(null);
-      setIsChatLoading(false);
     } catch (error) {
       console.error('Error sending message:', error);
       setChatError("Could not send your message. Please try again.");
 
       const defaultResponse = "I'm sorry, I couldn't process your message right now. Please try again or rephrase your question.";
       
-      // Add error response
-      setChatMessages((prev) => [...prev, { sender: 'AI', message: defaultResponse }]);
-      setIsChatLoading(false);
+      // Update the AI message with error response
+      setChatMessages((prev) => 
+        prev.map((msg, index) => 
+          index === aiMessageIndex ? { ...msg, message: defaultResponse } : msg
+        )
+      );
 
       toast({
         title: "Message failed",
         description: "Could not send your message. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsChatLoading(false);
     }
   };
 
@@ -345,7 +342,8 @@ const ResultPage = () => {
                     )}
                     <MessageFormatter 
                       content={msg.message} 
-                      isAI={msg.sender === 'AI'} 
+                      isAI={msg.sender === 'AI'}
+                      textColor={msg.sender === 'You' ? 'text-black' : 'text-white'}
                     />
                   </div>
                 </div>
