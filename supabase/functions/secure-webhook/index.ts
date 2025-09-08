@@ -164,12 +164,12 @@ serve(async (req) => {
       console.log('Processing non-streaming response...');
       try {
         const responseText = await response.text();
+        console.log('Raw response text:', responseText);
         responseData = JSON.parse(responseText);
         console.log('Successfully parsed JSON response:', responseData);
       } catch (parseError) {
-        const text = await response.text();
         console.error('Failed to parse webhook response as JSON:', parseError);
-        responseData = text || 'No response content received';
+        responseData = responseText || 'No response content received';
       }
     }
 
