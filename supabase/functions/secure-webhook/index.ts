@@ -141,7 +141,11 @@ serve(async (req) => {
       // If we found message content, use it
       if (messageContent) {
         console.log('Successfully extracted message content from stream:', messageContent);
-        responseData = messageContent;
+        responseData = { 
+          content: messageContent,
+          response: messageContent,
+          isStreaming: true 
+        };
       } else if (allJsonData.length > 0) {
         // If no explicit message content found, look for the last non-metadata object
         const contentEvents = allJsonData.filter(obj => 

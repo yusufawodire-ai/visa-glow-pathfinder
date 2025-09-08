@@ -334,7 +334,7 @@ const ResultPage = () => {
                   <div
                     className={`max-w-[80%] rounded-lg p-3 ${
                       msg.sender === 'You'
-                        ? 'bg-visa-gold'
+                        ? 'bg-visa-gold text-black'
                         : 'bg-visa-navy text-white'
                     }`}
                   >
@@ -343,12 +343,10 @@ const ResultPage = () => {
                         AI Assistant
                       </div>
                     )}
-                    <div className={msg.sender === 'You' ? 'text-black' : ''}>
-                      <MessageFormatter 
-                        content={msg.message} 
-                        isAI={msg.sender === 'AI'} 
-                      />
-                    </div>
+                    <MessageFormatter 
+                      content={msg.message} 
+                      isAI={msg.sender === 'AI'} 
+                    />
                   </div>
                 </div>
               ))}
