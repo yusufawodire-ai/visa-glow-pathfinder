@@ -13,7 +13,11 @@ import { TypingIndicator } from '@/components/TypingIndicator';
 
 interface EvaluationResult {
   score: string | number;
-  overview: string;
+  overview: string | {
+    evaluationSummary?: string;
+    categories?: any[];
+    recommendations?: any;
+  };
   evaluationId?: string | number;
 }
 
@@ -303,7 +307,14 @@ const ResultPage = () => {
             </h2>
             
             <div className="prose prose-invert flex-grow overflow-auto">
-              <MessageFormatter content={evaluationResult.overview} isAI={true} />
+              <MessageFormatter 
+                content={
+                  typeof evaluationResult.overview === 'string' 
+                    ? evaluationResult.overview 
+                    : evaluationResult.overview?.evaluationSummary || JSON.stringify(evaluationResult.overview, null, 2)
+                } 
+                isAI={true} 
+              />
             </div>
           </div>
         ) : null}
