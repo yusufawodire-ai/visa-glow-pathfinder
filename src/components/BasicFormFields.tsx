@@ -103,7 +103,14 @@ const BasicFormFields: React.FC<FormFieldsProps> = ({
                     });
                   }}
                 >
-                  {type}
+                  <div className="flex flex-col">
+                    <span>{type}</span>
+                    {(type === "O-2" || type === "P-1S") && (
+                      <span className="text-xs text-gray-400 mt-1">
+                        (Note: Verify you have a qualified relevant principal visa holder before evaluating.)
+                      </span>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
