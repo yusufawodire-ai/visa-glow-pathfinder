@@ -92,59 +92,54 @@ export const generateEvaluationPDF = async (
     pdf.text('Detailed Evaluation Overview', 20, currentY);
     currentY += 8;
 
-    // Clean up the overview text - remove markdown formatting for PDF
+    // Clean up and format the overview text for PDF
     let cleanOverview = evaluationData.overview;
     
-    // Remove markdown headers and format them
-    cleanOverview = cleanOverview.replace(/^### (.*$)/gm, '\n$1:\n');
-    cleanOverview = cleanOverview.replace(/^## (.*$)/gm, '\n$1:\n');
-    cleanOverview = cleanOverview.replace(/^# (.*$)/gm, '\n$1:\n');
+    // Remove markdown formatting
+    cleanOverview = cleanOverview.replace(/\*\*(.*?)\*\*/g, '$1'); // Remove bold
+    cleanOverview = cleanOverview.replace(/\*(.*?)\*/g, '$1'); // Remove italic
+    cleanOverview = cleanOverview.replace(/^#{1,6}\s*/gm, ''); // Remove headers
     
-    // Remove markdown bold/italic
-    cleanOverview = cleanOverview.replace(/\*\*(.*?)\*\*/g, '$1');
-    cleanOverview = cleanOverview.replace(/\*(.*?)\*/g, '$1');
-    
-    // Remove markdown lists and clean up
-    cleanOverview = cleanOverview.replace(/^- /gm, '• ');
-    cleanOverview = cleanOverview.replace(/^\d+\. /gm, '• ');
-    
-    // Split into sections and format
-    const sections = cleanOverview.split(/(?=🏆|👥|📰|💼|🎯|✅|❌|⚠️)/);
+    // Split into paragraphs and clean up
+    const paragraphs = cleanOverview.split('\n').filter(line => line.trim());
     
     pdf.setTextColor(0, 0, 0);
     pdf.setFontSize(10);
     pdf.setFont('helvetica', 'normal');
 
-    for (const section of sections) {
-      if (section.trim()) {
+    for (const paragraph of paragraphs) {
+      if (paragraph.trim()) {
         // Check if we need a new page
-        if (currentY > pageHeight - 40) {
+        if (currentY > pageHeight - 30) {
           pdf.addPage();
           currentY = 20;
         }
 
-        // If this looks like a section header (starts with emoji)
-        if (/^[🏆👥📰💼🎯✅❌⚠️]/.test(section.trim())) {
-          const lines = section.trim().split('\n');
-          const headerLine = lines[0];
-          const content = lines.slice(1).join('\n');
-
-          // Section header in gold
-          pdf.setTextColor(235, 194, 80);
-          pdf.setFont('helvetica', 'bold');
-          currentY = addWrappedText(headerLine, 20, currentY, pageWidth - 40, 11);
-          
-          // Section content in black
-          pdf.setTextColor(0, 0, 0);
-          pdf.setFont('helvetica', 'normal');
-          if (content.trim()) {
-            currentY = addWrappedText(content.trim(), 25, currentY, pageWidth - 50, 10);
-          }
-        } else {
-          currentY = addWrappedText(section.trim(), 25, currentY, pageWidth - 50, 10);
-        }
+        const trimmedParagraph = paragraph.trim();
         
-        currentY += 5;
+        // Check if this is a section header (starts with emoji or contains specific keywords)
+        if (/^[🏆👥📰💼🎯✅❌⚠️]/.test(trimmedParagraph) || 
+            /^(Summary|Awards|Memberships|Media|Employment|Profile)/i.test(trimmedParagraph)) {
+          // Section header styling
+          pdf.setTextColor(235, 194, 80); // visa-gold
+          pdf.setFontSize(12);
+          pdf.setFont('helvetica', 'bold');
+          currentY = addWrappedText(trimmedParagraph, 20, currentY, pageWidth - 40, 12);
+          currentY += 3;
+        } else {
+          // Regular content styling
+          pdf.setTextColor(0, 0, 0);
+          pdf.setFontSize(10);
+          pdf.setFont('helvetica', 'normal');
+          
+          // Handle bullet points
+          if (trimmedParagraph.startsWith('•') || trimmedParagraph.startsWith('-')) {
+            currentY = addWrappedText(trimmedParagraph.replace(/^[•-]\s*/, '• '), 25, currentY, pageWidth - 50, 10);
+          } else {
+            currentY = addWrappedText(trimmedParagraph, 25, currentY, pageWidth - 50, 10);
+          }
+          currentY += 2;
+        }
       }
     }
 

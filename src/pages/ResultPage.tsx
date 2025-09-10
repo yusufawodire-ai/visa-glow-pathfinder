@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Home, SendHorizontal, Loader2, AlertTriangle, MessageCircle, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { getEvaluationResult } from '@/lib/supabase';
@@ -291,23 +292,26 @@ const ResultPage = () => {
               <h2 className="text-2xl font-semibold text-center bg-gradient-to-r from-visa-gold to-white bg-clip-text text-transparent">
                 Your Chances of Success
               </h2>
-              <Button
-                onClick={handleDownloadPDF}
-                disabled={isGeneratingPDF}
-                className="bg-visa-gold hover:bg-visa-gold/90 text-black rounded-lg px-4 py-2 flex items-center gap-2"
-              >
-                {isGeneratingPDF ? (
-                  <>
-                    <Loader2 size={16} className="animate-spin" />
-                    Generating...
-                  </>
-                ) : (
-                  <>
-                    <Download size={16} />
-                    Download PDF
-                  </>
-                )}
-              </Button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      onClick={handleDownloadPDF}
+                      disabled={isGeneratingPDF}
+                      className="bg-visa-navy hover:bg-visa-navy/80 rounded-full w-10 h-10 p-0 flex items-center justify-center"
+                    >
+                      {isGeneratingPDF ? (
+                        <Loader2 size={20} className="animate-spin text-white" />
+                      ) : (
+                        <Download size={20} className="text-white" />
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Download PDF</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
             
             <div className="flex justify-center mb-8">
