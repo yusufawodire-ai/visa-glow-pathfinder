@@ -30,23 +30,37 @@ export const generateEvaluationPDF = async (
     pdf.setFillColor(12, 10, 4); // Dark background like website (#0C0A04)
     pdf.rect(0, 0, pageWidth, pageHeight, 'F');
 
-    // Helper functions
-    const addSection = (title: string, y: number, score?: string) => {
+    // Helper functions for structured layout
+    const checkPageBreak = (neededSpace: number = 20) => {
+      if (currentY + neededSpace > pageHeight - 40) {
+        pdf.addPage();
+        // Apply dark background to new page
+        pdf.setFillColor(12, 10, 4);
+        pdf.rect(0, 0, pageWidth, pageHeight, 'F');
+        currentY = 30;
+        return true;
+      }
+      return false;
+    };
+
+    const addSection = (title: string, score?: string) => {
+      checkPageBreak(25);
+      
       // Section background - Dark gray (#333333)
       pdf.setFillColor(51, 51, 51); // #333333
-      pdf.rect(margin, y - 2, contentWidth, 15, 'F');
+      pdf.rect(margin, currentY - 2, contentWidth, 15, 'F');
       
       // Section title - Bold uppercase gold (#FFD700)
       pdf.setTextColor(255, 215, 0); // #FFD700
       pdf.setFontSize(12);
       pdf.setFont('helvetica', 'bold');
       const sectionText = score ? `${title.toUpperCase()} (${score})` : title.toUpperCase();
-      pdf.text(sectionText, margin + 3, y + 8);
+      pdf.text(sectionText, margin + 3, currentY + 8);
       
-      return y + 20;
+      currentY += 20;
     };
 
-    const addText = (text: string, x: number, y: number, maxWidth: number, fontSize: number = 10, color: 'white' | 'gold' | 'light' | 'lightgold' = 'white', style: 'normal' | 'bold' | 'italic' = 'normal') => {
+    const addParagraph = (text: string, fontSize: number = 10, color: 'white' | 'gold' | 'light' | 'lightgold' = 'white', style: 'normal' | 'bold' | 'italic' = 'normal', indent: number = 0) => {
       // Set colors based on theme
       if (color === 'white') {
         pdf.setTextColor(255, 255, 255);
@@ -61,15 +75,29 @@ export const generateEvaluationPDF = async (
       pdf.setFontSize(fontSize);
       pdf.setFont('helvetica', style);
       
-      // Ensure maxWidth doesn't exceed page boundaries
-      const safeMaxWidth = Math.min(maxWidth, pageWidth - margin - x - 5);
-      const lines = pdf.splitTextToSize(text, safeMaxWidth);
-      pdf.text(lines, x, y);
-      return y + (lines.length * (fontSize * 0.35)) + 3;
+      // Calculate safe text width with proper margins and indentation
+      const textWidth = contentWidth - indent - 5; // 5mm additional safety margin
+      const lines = pdf.splitTextToSize(text.trim(), textWidth);
+      
+      // Check if we need page break
+      const neededSpace = lines.length * (fontSize * 0.35) + 5;
+      checkPageBreak(neededSpace);
+      
+      // Add text with proper positioning
+      pdf.text(lines, margin + indent, currentY);
+      currentY += neededSpace;
     };
 
-    const addBoldText = (text: string, x: number, y: number, maxWidth: number, fontSize: number = 10, color: 'white' | 'gold' | 'lightgold' = 'white') => {
-      return addText(text, x, y, maxWidth, fontSize, color, 'bold');
+    const addBulletPoint = (text: string, fontSize: number = 10, color: 'white' | 'light' = 'white', indent: number = 10) => {
+      addParagraph(`• ${text}`, fontSize, color, 'normal', indent);
+    };
+
+    const addSubheading = (text: string, score?: string) => {
+      checkPageBreak(15);
+      currentY += 8; // Add spacing before subheading
+      
+      const fullText = score ? `${text} (${score})` : text;
+      addParagraph(fullText, 11, 'lightgold', 'bold', 5);
     };
 
     // HEADER SECTION
@@ -96,7 +124,7 @@ export const generateEvaluationPDF = async (
     currentY = 70;
 
     // EVALUATION SCORE SECTION
-    currentY = addSection('EVALUATION SCORE', currentY);
+    addSection('EVALUATION SCORE');
     
     // Score display with visual emphasis
     const scoreText = typeof evaluationData.score === 'string' ? evaluationData.score : `${evaluationData.score}%`;
@@ -127,13 +155,13 @@ export const generateEvaluationPDF = async (
       interpretation = 'Significant improvement required';
     }
     
-    currentY = addText(interpretation, margin + (contentWidth / 2) + 10, currentY + 15, contentWidth / 2, 10, 'light');
-    currentY += 45;
+    addParagraph(interpretation, 10, 'light');
+    currentY += 30;
 
     // DETAILED OVERVIEW SECTION
-    currentY = addSection('DETAILED EVALUATION OVERVIEW', currentY);
+    addSection('DETAILED EVALUATION OVERVIEW');
     
-    // Parse and format the overview content
+    // Parse and format the overview content with improved header detection
     let cleanOverview = evaluationData.overview
       .replace(/\*\*(.*?)\*\*/g, '$1') // Remove bold markdown
       .replace(/\*(.*?)\*/g, '$1') // Remove italic markdown
@@ -148,53 +176,42 @@ export const generateEvaluationPDF = async (
       
       if (!line) continue;
       
-      // Check if we need a new page
-      if (currentY > pageHeight - 40) {
-        pdf.addPage();
-        // Apply dark background to new page
-        pdf.setFillColor(12, 10, 4);
-        pdf.rect(0, 0, pageWidth, pageHeight, 'F');
-        currentY = 20;
-      }
-      
       // Detect summary section
       if (line.toLowerCase().includes('summary') && line.includes(':')) {
         inSummary = true;
-        currentY = addSection('SUMMARY', currentY);
+        addSection('SUMMARY');
         continue;
       }
       
       // Process summary content
-      if (inSummary && !(/^(Awards|Memberships|Media|Employment|Profile)/i.test(line))) {
-        currentY = addText(line, margin, currentY, contentWidth, 10, 'white');
+      if (inSummary && !(/^(Awards|Memberships|Media|Employment|Profile|Judging|High\s+Salary|Extraordinary)/i.test(line))) {
+        addParagraph(line, 10, 'white');
         continue;
       } else {
         inSummary = false;
       }
       
-      // Section headers (Awards, Memberships, etc.)
-      if (/^(Awards|Memberships|Media|Employment|Profile)/i.test(line)) {
-        currentY += 8; // Add spacing before new section
-        
-        // Extract section name and score if present
-        const sectionMatch = line.match(/^(.*?)\s*\(([^)]+)\)/);
-        if (sectionMatch) {
-          const sectionName = sectionMatch[1].trim();
-          const score = sectionMatch[2];
-          currentY = addSection(sectionName, currentY, score);
-        } else {
-          // Simple section header
-          currentY = addSection(line, currentY);
-        }
+      // Enhanced section header detection - matches patterns like "Employment in Critical Capacity (15/25)"
+      const sectionHeaderMatch = line.match(/^(.*?(?:Employment|Membership|Awards?|Media|Profile|Judging|High\s+Salary|Extraordinary).*?)\s*\(([^)]+)\)/i);
+      if (sectionHeaderMatch) {
+        const sectionName = sectionHeaderMatch[1].trim();
+        const score = sectionHeaderMatch[2];
+        addSection(sectionName, score);
         continue;
       }
       
-      // Handle special notes like "High Salary (0/25)"
-      const specialNoteMatch = line.match(/^(.+?)\s*\((\d+\/\d+)\)$/);
-      if (specialNoteMatch && !line.toLowerCase().includes('you have') && !line.toLowerCase().includes('you need')) {
-        const noteText = specialNoteMatch[1];
-        const score = specialNoteMatch[2];
-        currentY = addText(`${noteText} (${score})`, margin + 5, currentY, contentWidth - 10, 9, 'light', 'italic');
+      // Simple section headers without scores
+      if (/^(Awards|Memberships|Media|Employment|Profile|Summary)/i.test(line) && !line.includes('(')) {
+        addSection(line);
+        continue;
+      }
+      
+      // Handle special notes like "High Salary (0/25)" as subheadings
+      const subheadingMatch = line.match(/^(.+?)\s*\((\d+\/\d+)\)$/);
+      if (subheadingMatch && !line.toLowerCase().includes('you have') && !line.toLowerCase().includes('you need')) {
+        const noteText = subheadingMatch[1];
+        const score = subheadingMatch[2];
+        addSubheading(noteText, score);
         continue;
       }
       
@@ -205,18 +222,18 @@ export const generateEvaluationPDF = async (
         // Check for "You have:" or "You need:" patterns
         if (bulletText.toLowerCase().startsWith('you have:')) {
           const content = bulletText.substring(9).trim();
-          currentY = addBoldText('You have:', margin + 10, currentY, contentWidth - 20, 10, 'white');
-          currentY = addText(content, margin + 15, currentY, contentWidth - 25, 10, 'white');
+          addParagraph('You have:', 10, 'white', 'bold', 10);
+          addParagraph(content, 10, 'white', 'normal', 15);
         } else if (bulletText.toLowerCase().startsWith('you need:')) {
           const content = bulletText.substring(9).trim();
-          currentY = addBoldText('You need:', margin + 10, currentY, contentWidth - 20, 10, 'lightgold');
-          currentY = addText(content, margin + 15, currentY, contentWidth - 25, 10, 'white');
+          addParagraph('You need:', 10, 'lightgold', 'bold', 10);
+          addParagraph(content, 10, 'white', 'normal', 15);
         } else {
-          currentY = addText('• ' + bulletText, margin + 10, currentY, contentWidth - 20, 10, 'light');
+          addBulletPoint(bulletText, 10, 'light', 10);
         }
       } else {
         // Regular paragraph text
-        currentY = addText(line, margin + 5, currentY, contentWidth - 10, 10, 'light');
+        addParagraph(line, 10, 'light', 'normal', 5);
       }
     }
 
