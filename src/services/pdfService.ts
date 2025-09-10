@@ -46,7 +46,7 @@ export const generateEvaluationPDF = async (
       pdf.setFont('helvetica', 'bold');
       pdf.text(title, margin + 5, y + 8);
       
-      return y + 30;
+      return y + 35;
     };
 
     const addText = (text: string, x: number, y: number, maxWidth: number, fontSize: number = 11, color: 'white' | 'gold' | 'light' = 'white') => {
@@ -63,7 +63,7 @@ export const generateEvaluationPDF = async (
       pdf.setFont('helvetica', 'normal');
       const lines = pdf.splitTextToSize(text, maxWidth);
       pdf.text(lines, x, y);
-      return y + (lines.length * (fontSize * 0.4)) + 4;
+      return y + (lines.length * (fontSize * 0.4)) + 5;
     };
 
     const addBoldText = (text: string, x: number, y: number, maxWidth: number, fontSize: number = 12, color: 'white' | 'gold' = 'white') => {
@@ -85,38 +85,23 @@ export const generateEvaluationPDF = async (
     
     // Main header background
     pdf.setFillColor(235, 194, 80); // visa-gold
-    pdf.rect(0, 0, pageWidth, 35, 'F');
+    pdf.rect(0, 0, pageWidth, 40, 'F');
     
     // Company logo/title
     pdf.setTextColor(0, 0, 0); // Black text on gold background
     pdf.setFontSize(24);
     pdf.setFont('helvetica', 'bold');
-    pdf.text('SHERROD SPORTS VISAS', margin, 20);
+    pdf.text('SHERROD SPORTS VISAS', margin, 22);
     
     pdf.setFontSize(14);
     pdf.setFont('helvetica', 'normal');
-    pdf.text('Evaluation Report', margin, 30);
+    pdf.text('Evaluation Report', margin, 32);
     
     // Date
     pdf.setFontSize(10);
-    pdf.text(`Generated: ${new Date().toLocaleDateString()}`, pageWidth - 60, 30);
+    pdf.text(`Generated: ${new Date().toLocaleDateString()}`, pageWidth - 60, 32);
     
-    currentY = 55;
-
-    // APPLICANT INFORMATION SECTION
-    currentY = addSection('APPLICANT INFORMATION', currentY);
-    
-    const infoY = currentY;
-    currentY = addBoldText('Personal Details', margin, currentY, contentWidth / 2, 12, 'gold');
-    currentY = addText(`Name: ${userData.name}`, margin, currentY, contentWidth / 2);
-    currentY = addText(`Email: ${userData.email}`, margin, currentY, contentWidth / 2);
-    currentY = addText(`Visa Type: ${userData.visaType}`, margin, currentY, contentWidth / 2);
-    
-    if (userData.documents && userData.documents.length > 0) {
-      currentY = addText(`Documents: ${userData.documents.length} file(s) submitted`, margin, currentY, contentWidth / 2);
-    }
-    
-    currentY = Math.max(currentY, infoY) + 20;
+    currentY = 70;
 
     // EVALUATION SCORE SECTION
     currentY = addSection('EVALUATION SCORE', currentY);
@@ -127,15 +112,15 @@ export const generateEvaluationPDF = async (
     
     // Score background box
     pdf.setFillColor(106, 78, 127, 0.2); // visa-lilac with transparency
-    pdf.rect(margin, currentY, contentWidth / 2, 40, 'F');
+    pdf.rect(margin, currentY, contentWidth / 2, 45, 'F');
     
     // Large score text
     pdf.setTextColor(235, 194, 80); // visa-gold
-    pdf.setFontSize(36);
+    pdf.setFontSize(20);
     pdf.setFont('helvetica', 'bold');
     pdf.text('SUCCESS RATE', margin + 10, currentY + 15);
     
-    pdf.setFontSize(48);
+    pdf.setFontSize(42);
     pdf.text(scoreText, margin + 10, currentY + 35);
     
     // Score interpretation
@@ -150,26 +135,29 @@ export const generateEvaluationPDF = async (
       interpretation = 'Significant improvement required';
     }
     
-    currentY = addText(interpretation, margin + (contentWidth / 2) + 20, currentY + 15, contentWidth / 2, 14, 'light');
-    currentY += 50;
+    currentY = addText(interpretation, margin + (contentWidth / 2) + 20, currentY + 20, contentWidth / 2, 12, 'light');
+    currentY += 60;
 
     // DETAILED OVERVIEW SECTION
     currentY = addSection('DETAILED EVALUATION OVERVIEW', currentY);
     
     // Parse and format the overview content
-    const cleanOverview = evaluationData.overview
+    let cleanOverview = evaluationData.overview
       .replace(/\*\*(.*?)\*\*/g, '$1') // Remove bold markdown
       .replace(/\*(.*?)\*/g, '$1') // Remove italic markdown
       .replace(/^#{1,6}\s*/gm, ''); // Remove headers
     
-    // Split into sections based on emojis or keywords
-    const sections = cleanOverview.split(/(?=🏆|👥|📰|💼|🎯|✅|❌|⚠️|\n(?:Summary|Awards|Memberships|Media|Employment|Profile))/i);
+    // Process the text to create proper structure
+    const lines = cleanOverview.split('\n').filter(line => line.trim());
+    let inSummary = false;
     
-    for (const section of sections) {
-      if (!section.trim()) continue;
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      
+      if (!line) continue;
       
       // Check if we need a new page
-      if (currentY > pageHeight - 60) {
+      if (currentY > pageHeight - 50) {
         pdf.addPage();
         // Apply dark background to new page
         pdf.setFillColor(12, 10, 4);
@@ -177,46 +165,72 @@ export const generateEvaluationPDF = async (
         currentY = 20;
       }
       
-      const lines = section.trim().split('\n').filter(line => line.trim());
+      // Detect summary section
+      if (line.toLowerCase().includes('summary') && line.includes(':')) {
+        inSummary = true;
+        // Summary header with special styling
+        pdf.setFillColor(235, 194, 80, 0.2);
+        pdf.rect(margin - 2, currentY - 3, contentWidth + 4, 20, 'F');
+        currentY = addBoldText('SUMMARY', margin, currentY + 8, contentWidth, 14, 'gold');
+        continue;
+      }
       
-      if (lines.length > 0) {
-        const firstLine = lines[0].trim();
+      // Process summary content
+      if (inSummary && !(/^(Awards|Memberships|Media|Employment|Profile)/i.test(line))) {
+        currentY = addText(line, margin, currentY, contentWidth, 11, 'white');
+        continue;
+      } else {
+        inSummary = false;
+      }
+      
+      // Section headers (Awards, Memberships, etc.)
+      if (/^(Awards|Memberships|Media|Employment|Profile)/i.test(line)) {
+        currentY += 10; // Add spacing before new section
         
-        // Check if it's a section header
-        if (/^[🏆👥📰💼🎯✅❌⚠️]/.test(firstLine) || 
-            /^(Summary|Awards|Memberships|Media|Employment|Profile)/i.test(firstLine)) {
+        // Extract section name and score if present
+        const sectionMatch = line.match(/^(.*?)\s*\(([^)]+)\)/);
+        if (sectionMatch) {
+          const sectionName = sectionMatch[1].trim();
+          const score = sectionMatch[2];
           
-          // Section header with background
-          pdf.setFillColor(235, 194, 80, 0.1); // gold with transparency
+          // Section header background
+          pdf.setFillColor(106, 78, 127, 0.15);
           pdf.rect(margin - 2, currentY - 3, contentWidth + 4, 18, 'F');
           
-          currentY = addBoldText(firstLine.replace(/^[🏆👥📰💼🎯✅❌⚠️]\s*/, ''), margin, currentY + 8, contentWidth, 13, 'gold');
+          // Section title
+          currentY = addBoldText(sectionName.toUpperCase(), margin, currentY + 8, contentWidth * 0.7, 12, 'gold');
           
-          // Process remaining content
-          for (let i = 1; i < lines.length; i++) {
-            const line = lines[i].trim();
-            if (line) {
-              if (line.startsWith('•') || line.startsWith('-')) {
-                currentY = addText(`• ${line.replace(/^[•-]\s*/, '')}`, margin + 10, currentY, contentWidth - 20, 10, 'white');
-              } else {
-                currentY = addText(line, margin + 5, currentY, contentWidth - 10, 10, 'light');
-              }
-            }
-          }
+          // Score on the right
+          pdf.setTextColor(235, 194, 80);
+          pdf.setFontSize(12);
+          pdf.setFont('helvetica', 'bold');
+          pdf.text(`(${score})`, pageWidth - margin - 30, currentY - 8);
+          
+          currentY += 5;
         } else {
-          // Regular content
-          for (const line of lines) {
-            if (line.trim()) {
-              if (line.startsWith('•') || line.startsWith('-')) {
-                currentY = addText(`• ${line.replace(/^[•-]\s*/, '')}`, margin + 10, currentY, contentWidth - 20, 10, 'white');
-              } else {
-                currentY = addText(line, margin, currentY, contentWidth, 10, 'light');
-              }
-            }
-          }
+          // Simple section header
+          pdf.setFillColor(106, 78, 127, 0.15);
+          pdf.rect(margin - 2, currentY - 3, contentWidth + 4, 18, 'F');
+          currentY = addBoldText(line.toUpperCase(), margin, currentY + 8, contentWidth, 12, 'gold');
         }
+        continue;
+      }
+      
+      // Bullet points and regular content
+      if (line.startsWith('•') || line.startsWith('-') || line.startsWith('\'')) {
+        const bulletText = line.replace(/^[•\-\']\s*/, '').trim();
         
-        currentY += 8;
+        // Check for "You have:" or "You need:" patterns
+        if (bulletText.toLowerCase().startsWith('you have:')) {
+          currentY = addBoldText('✓ ' + bulletText.substring(9).trim(), margin + 10, currentY, contentWidth - 20, 10, 'white');
+        } else if (bulletText.toLowerCase().startsWith('you need:')) {
+          currentY = addBoldText('→ ' + bulletText.substring(9).trim(), margin + 10, currentY, contentWidth - 20, 10, 'gold');
+        } else {
+          currentY = addText('• ' + bulletText, margin + 10, currentY, contentWidth - 20, 10, 'light');
+        }
+      } else {
+        // Regular paragraph text
+        currentY = addText(line, margin, currentY, contentWidth, 10, 'light');
       }
     }
 
@@ -232,10 +246,10 @@ export const generateEvaluationPDF = async (
     pdf.setFont('helvetica', 'bold');
     pdf.text('Sherrod Sports Visas © 2025', pageWidth - 60, pageHeight - 15);
 
-    // Generate filename
-    const cleanName = userData.name.replace(/[^a-zA-Z0-9]/g, '_');
+    // Generate filename with timestamp
     const date = new Date().toISOString().split('T')[0];
-    const filename = `Visa_Evaluation_${cleanName}_${date}.pdf`;
+    const timestamp = new Date().toTimeString().slice(0, 5).replace(':', '');
+    const filename = `Visa_Evaluation_Report_${date}_${timestamp}.pdf`;
 
     // Save the PDF
     pdf.save(filename);
