@@ -116,13 +116,10 @@ serve(async (req) => {
         responseData = jsonResponse.content;
       } else if (jsonResponse.response) {
         responseData = jsonResponse.response;
-      } else if (typeof jsonResponse === 'string') {
-        responseData = jsonResponse;
       } else {
         // If it's an object with unknown structure, stringify it nicely
         responseData = JSON.stringify(jsonResponse, null, 2);
       }
-      
     } catch (parseError) {
       console.error('Failed to parse webhook response as JSON:', parseError);
       const responseText = await response.text();
