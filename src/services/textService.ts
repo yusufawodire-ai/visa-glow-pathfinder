@@ -92,12 +92,6 @@ SHERROD SPORTS VISAS - EVALUATION REPORT
 
 Generated on: ${currentDate}
 
-APPLICANT INFORMATION
---------------------
-Name: ${userData.name}
-Email: ${userData.email}
-Visa Type: ${userData.visaType}
-
 EVALUATION SCORE
 ---------------
 Overall Success Probability: ${score}
