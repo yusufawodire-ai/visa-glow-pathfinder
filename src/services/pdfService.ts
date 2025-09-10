@@ -61,9 +61,12 @@ export const generateEvaluationPDF = async (
       
       pdf.setFontSize(fontSize);
       pdf.setFont('helvetica', 'normal');
-      const lines = pdf.splitTextToSize(text, maxWidth);
+      
+      // Ensure maxWidth doesn't exceed page boundaries
+      const safeMaxWidth = Math.min(maxWidth, contentWidth - (x - margin));
+      const lines = pdf.splitTextToSize(text, safeMaxWidth);
       pdf.text(lines, x, y);
-      return y + (lines.length * (fontSize * 0.4)) + 5;
+      return y + (lines.length * (fontSize * 0.35)) + 4;
     };
 
     const addBoldText = (text: string, x: number, y: number, maxWidth: number, fontSize: number = 12, color: 'white' | 'gold' = 'white') => {
@@ -75,9 +78,12 @@ export const generateEvaluationPDF = async (
       
       pdf.setFontSize(fontSize);
       pdf.setFont('helvetica', 'bold');
-      const lines = pdf.splitTextToSize(text, maxWidth);
+      
+      // Ensure maxWidth doesn't exceed page boundaries
+      const safeMaxWidth = Math.min(maxWidth, contentWidth - (x - margin));
+      const lines = pdf.splitTextToSize(text, safeMaxWidth);
       pdf.text(lines, x, y);
-      return y + (lines.length * (fontSize * 0.4)) + 6;
+      return y + (lines.length * (fontSize * 0.35)) + 5;
     };
 
     // HEADER SECTION
@@ -222,29 +228,37 @@ export const generateEvaluationPDF = async (
         
         // Check for "You have:" or "You need:" patterns
         if (bulletText.toLowerCase().startsWith('you have:')) {
-          currentY = addBoldText('✓ ' + bulletText.substring(9).trim(), margin + 10, currentY, contentWidth - 20, 10, 'white');
+          currentY = addBoldText('✓ ' + bulletText.substring(9).trim(), margin + 10, currentY, contentWidth - 30, 10, 'white');
         } else if (bulletText.toLowerCase().startsWith('you need:')) {
-          currentY = addBoldText('→ ' + bulletText.substring(9).trim(), margin + 10, currentY, contentWidth - 20, 10, 'gold');
+          currentY = addBoldText('→ ' + bulletText.substring(9).trim(), margin + 10, currentY, contentWidth - 30, 10, 'gold');
         } else {
-          currentY = addText('• ' + bulletText, margin + 10, currentY, contentWidth - 20, 10, 'light');
+          currentY = addText('• ' + bulletText, margin + 10, currentY, contentWidth - 30, 10, 'light');
         }
       } else {
         // Regular paragraph text
-        currentY = addText(line, margin, currentY, contentWidth, 10, 'light');
+        currentY = addText(line, margin, currentY, contentWidth - 10, 10, 'light');
       }
     }
 
-    // FOOTER
+    // FOOTER - Fixed formatting
+    currentY = Math.max(currentY + 20, pageHeight - 30);
+    
+    // Footer background
     pdf.setFillColor(235, 194, 80); // visa-gold footer
     pdf.rect(0, pageHeight - 25, pageWidth, 25, 'F');
     
+    // Footer text - left side
     pdf.setTextColor(0, 0, 0);
-    pdf.setFontSize(9);
+    pdf.setFontSize(8);
     pdf.setFont('helvetica', 'normal');
-    pdf.text('This evaluation is for informational purposes only. Consult with immigration professionals for official guidance.', margin, pageHeight - 15);
     
+    const disclaimerText = 'This evaluation is for informational purposes only. Consult with immigration professionals for official guidance.';
+    const disclaimerLines = pdf.splitTextToSize(disclaimerText, pageWidth - 120); // Leave space for company name
+    pdf.text(disclaimerLines, margin, pageHeight - 15);
+    
+    // Footer text - right side (company name)
     pdf.setFont('helvetica', 'bold');
-    pdf.text('Sherrod Sports Visas © 2025', pageWidth - 60, pageHeight - 15);
+    pdf.text('Sherrod Sports Visas © 2025', pageWidth - 70, pageHeight - 10);
 
     // Generate filename with timestamp
     const date = new Date().toISOString().split('T')[0];
