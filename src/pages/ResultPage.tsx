@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Home, SendHorizontal, Loader2, AlertTriangle, MessageCircle } from 'lucide-react';
+import { Home, SendHorizontal, Loader2, AlertTriangle, MessageCircle, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { MessageFormatter } from '@/components/MessageFormatter';
 import { TypingIndicator } from '@/components/TypingIndicator';
+import { generateEvaluationPDF, getUserDataFromStorage } from '@/services/pdfService';
 
 interface EvaluationResult {
   score: string | number;
@@ -33,6 +34,7 @@ const ResultPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [chatError, setChatError] = useState<string | null>(null);
   const [sessionId] = useState(`user-${Math.random().toString(36).substring(2, 15)}`);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -209,6 +211,40 @@ const ResultPage = () => {
     }
   };
 
+  const handleDownloadPDF = async () => {
+    if (!evaluationResult) return;
+
+    setIsGeneratingPDF(true);
+    try {
+      const userData = getUserDataFromStorage();
+      if (!userData) {
+        toast({
+          title: "Data Error",
+          description: "Could not retrieve your information for the PDF. Please try the evaluation again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      await generateEvaluationPDF(evaluationResult, userData);
+      
+      toast({
+        title: "PDF Generated",
+        description: "Your evaluation report has been downloaded successfully.",
+        variant: "default",
+      });
+    } catch (error) {
+      console.error('PDF generation failed:', error);
+      toast({
+        title: "Download Failed",
+        description: "Could not generate the PDF. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingPDF(false);
+    }
+  };
+
   if (isLoading && !evaluationResult) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#0C0A04]">
@@ -258,9 +294,28 @@ const ResultPage = () => {
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
         {evaluationResult ? (
           <div className="glass-container flex flex-col h-full">
-            <h2 className="text-2xl font-semibold mb-6 text-center bg-gradient-to-r from-visa-gold to-white bg-clip-text text-transparent">
-              Your Chances of Success
-            </h2>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-semibold text-center bg-gradient-to-r from-visa-gold to-white bg-clip-text text-transparent">
+                Your Chances of Success
+              </h2>
+              <Button
+                onClick={handleDownloadPDF}
+                disabled={isGeneratingPDF}
+                className="bg-visa-gold hover:bg-visa-gold/90 text-black rounded-lg px-4 py-2 flex items-center gap-2"
+              >
+                {isGeneratingPDF ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Download size={16} />
+                    Download PDF
+                  </>
+                )}
+              </Button>
+            </div>
             
             <div className="flex justify-center mb-8">
               <div className="relative h-40 w-40 flex items-center justify-center">
