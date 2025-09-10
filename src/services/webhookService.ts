@@ -70,7 +70,7 @@ async function processWebhookRequest(
     // Use our secure edge function to proxy the request
     const { data: rawResponse, error } = await supabase.functions.invoke('secure-webhook', {
       body: {
-        webhookUrl: 'https://igta.app.n8n.cloud/webhook-test/DEV-ENVIRONMENT',
+        webhookUrl: 'https://igta.app.n8n.cloud/webhook/DEV-ENVIRONMENT',
         method: 'POST',
         body: formDataObject,
         isFormData: true

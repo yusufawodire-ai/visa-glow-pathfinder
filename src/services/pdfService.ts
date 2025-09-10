@@ -22,8 +22,8 @@ export const generateEvaluationPDF = async (
     const pdf = new jsPDF('p', 'mm', 'a4');
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
-    const margin = 25;
-    const contentWidth = pageWidth - (margin * 2) - 10; // Extra safety margin
+    const margin = 30; // Increased margin for safety
+    const contentWidth = pageWidth - (margin * 2) - 20; // More conservative width
     let currentY = 0;
 
     // Dark background for entire page
@@ -63,7 +63,7 @@ export const generateEvaluationPDF = async (
       pdf.setFont('helvetica', 'normal');
       
       // Ensure maxWidth doesn't exceed page boundaries - calculate available width from x to right margin
-      const safeMaxWidth = Math.min(maxWidth, pageWidth - margin - x);
+      const safeMaxWidth = Math.min(maxWidth, pageWidth - margin - x - 5); // Extra 5mm safety
       const lines = pdf.splitTextToSize(text, safeMaxWidth);
       pdf.text(lines, x, y);
       return y + (lines.length * (fontSize * 0.35)) + 4;
@@ -80,7 +80,7 @@ export const generateEvaluationPDF = async (
       pdf.setFont('helvetica', 'bold');
       
       // Ensure maxWidth doesn't exceed page boundaries - calculate available width from x to right margin
-      const safeMaxWidth = Math.min(maxWidth, pageWidth - margin - x);
+      const safeMaxWidth = Math.min(maxWidth, pageWidth - margin - x - 5); // Extra 5mm safety
       const lines = pdf.splitTextToSize(text, safeMaxWidth);
       pdf.text(lines, x, y);
       return y + (lines.length * (fontSize * 0.35)) + 5;
@@ -228,15 +228,15 @@ export const generateEvaluationPDF = async (
         
         // Check for "You have:" or "You need:" patterns
         if (bulletText.toLowerCase().startsWith('you have:')) {
-          currentY = addBoldText('✓ ' + bulletText.substring(9).trim(), margin + 15, currentY, contentWidth - 40, 10, 'white');
+          currentY = addBoldText('✓ ' + bulletText.substring(9).trim(), margin + 10, currentY, contentWidth - 50, 10, 'white');
         } else if (bulletText.toLowerCase().startsWith('you need:')) {
-          currentY = addBoldText('→ ' + bulletText.substring(9).trim(), margin + 15, currentY, contentWidth - 40, 10, 'gold');
+          currentY = addBoldText('→ ' + bulletText.substring(9).trim(), margin + 10, currentY, contentWidth - 50, 10, 'gold');
         } else {
-          currentY = addText('• ' + bulletText, margin + 15, currentY, contentWidth - 40, 10, 'light');
+          currentY = addText('• ' + bulletText, margin + 10, currentY, contentWidth - 50, 10, 'light');
         }
       } else {
         // Regular paragraph text
-        currentY = addText(line, margin + 5, currentY, contentWidth - 20, 10, 'light');
+        currentY = addText(line, margin + 5, currentY, contentWidth - 30, 10, 'light');
       }
     }
 
@@ -253,7 +253,7 @@ export const generateEvaluationPDF = async (
     pdf.setFont('helvetica', 'normal');
     
     const disclaimerText = 'This evaluation is for informational purposes only. Consult with immigration professionals for official guidance.';
-    const disclaimerLines = pdf.splitTextToSize(disclaimerText, pageWidth - 140); // More space for company name
+    const disclaimerLines = pdf.splitTextToSize(disclaimerText, pageWidth - 150); // More conservative width
     pdf.text(disclaimerLines, margin, pageHeight - 15);
     
     // Footer text - right side (company name)
