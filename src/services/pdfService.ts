@@ -62,8 +62,8 @@ export const generateEvaluationPDF = async (
       pdf.setFontSize(fontSize);
       pdf.setFont('helvetica', 'normal');
       
-      // Ensure maxWidth doesn't exceed page boundaries
-      const safeMaxWidth = Math.min(maxWidth, contentWidth - (x - margin));
+      // Ensure maxWidth doesn't exceed page boundaries - calculate available width from x to right margin
+      const safeMaxWidth = Math.min(maxWidth, pageWidth - margin - x);
       const lines = pdf.splitTextToSize(text, safeMaxWidth);
       pdf.text(lines, x, y);
       return y + (lines.length * (fontSize * 0.35)) + 4;
@@ -79,8 +79,8 @@ export const generateEvaluationPDF = async (
       pdf.setFontSize(fontSize);
       pdf.setFont('helvetica', 'bold');
       
-      // Ensure maxWidth doesn't exceed page boundaries
-      const safeMaxWidth = Math.min(maxWidth, contentWidth - (x - margin));
+      // Ensure maxWidth doesn't exceed page boundaries - calculate available width from x to right margin
+      const safeMaxWidth = Math.min(maxWidth, pageWidth - margin - x);
       const lines = pdf.splitTextToSize(text, safeMaxWidth);
       pdf.text(lines, x, y);
       return y + (lines.length * (fontSize * 0.35)) + 5;
