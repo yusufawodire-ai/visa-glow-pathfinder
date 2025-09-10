@@ -124,14 +124,14 @@ const BasicFormFields: React.FC<FormFieldsProps> = ({
           <input
             id="link"
             type="text"
-            placeholder="Personal website, articles, press coverage, etc. (No LinkedIn)"
+            placeholder="Personal website, articles, press coverage, etc. (No social media account or profile link)"
             className="input-field pl-10 transition-all duration-300 focus:shadow-[0_0_15px_rgba(167,139,250,0.5)]"
             value={link}
             onChange={(e) => setLink(e.target.value)}
           />
           <LinkIcon size={18} className="absolute left-3 top-3.5 text-gray-400" />
         </div>
-        <p className="text-sm text-white mt-1">Add professional website, portfolios, or press coverage (please do not include LinkedIn links)</p>
+        <p className="text-sm text-white mt-1">Add professional website, portfolios, or press coverage (please do not include social media account or profile link)</p>
       </div>
     </>
   );
