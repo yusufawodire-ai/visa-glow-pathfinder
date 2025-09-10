@@ -11,7 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { MessageFormatter } from '@/components/MessageFormatter';
 import { TypingIndicator } from '@/components/TypingIndicator';
-import { generateEvaluationPDF, getUserDataFromStorage } from '@/services/pdfService';
+import { generateEvaluationText, getUserDataFromStorage } from '@/services/textService';
 
 interface EvaluationResult {
   score: string | number;
@@ -35,7 +35,7 @@ const ResultPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [chatError, setChatError] = useState<string | null>(null);
   const [sessionId] = useState(`user-${Math.random().toString(36).substring(2, 15)}`);
-  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -212,30 +212,29 @@ const ResultPage = () => {
     }
   };
 
-  const handleDownloadPDF = async () => {
+  const handleDownloadReport = async () => {
     if (!evaluationResult) return;
 
-    setIsGeneratingPDF(true);
+    setIsGeneratingReport(true);
     try {
       const userData = getUserDataFromStorage();
-      // userData will always be returned now with fallback values
       
-      await generateEvaluationPDF(evaluationResult, userData);
+      generateEvaluationText(evaluationResult, userData);
       
       toast({
-        title: "PDF Generated",
+        title: "Report Downloaded",
         description: "Your evaluation report has been downloaded successfully.",
         variant: "default",
       });
     } catch (error) {
-      console.error('PDF generation failed:', error);
+      console.error('Report generation failed:', error);
       toast({
         title: "Download Failed",
-        description: "Could not generate the PDF. Please try again.",
+        description: "Could not generate the report. Please try again.",
         variant: "destructive",
       });
     } finally {
-      setIsGeneratingPDF(false);
+      setIsGeneratingReport(false);
     }
   };
 
@@ -296,11 +295,11 @@ const ResultPage = () => {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
-                      onClick={handleDownloadPDF}
-                      disabled={isGeneratingPDF}
+                      onClick={handleDownloadReport}
+                      disabled={isGeneratingReport}
                       className="bg-visa-navy hover:bg-visa-navy/80 rounded-full w-10 h-10 p-0 flex items-center justify-center"
                     >
-                      {isGeneratingPDF ? (
+                      {isGeneratingReport ? (
                         <Loader2 size={20} className="animate-spin text-white" />
                       ) : (
                         <Download size={20} className="text-white" />
@@ -308,7 +307,7 @@ const ResultPage = () => {
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Download PDF</p>
+                    <p>Download Report (Text)</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
