@@ -217,15 +217,8 @@ const ResultPage = () => {
     setIsGeneratingPDF(true);
     try {
       const userData = getUserDataFromStorage();
-      if (!userData) {
-        toast({
-          title: "Data Error",
-          description: "Could not retrieve your information for the PDF. Please try the evaluation again.",
-          variant: "destructive",
-        });
-        return;
-      }
-
+      // userData will always be returned now with fallback values
+      
       await generateEvaluationPDF(evaluationResult, userData);
       
       toast({

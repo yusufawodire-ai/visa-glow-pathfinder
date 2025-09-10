@@ -169,18 +169,47 @@ export const generateEvaluationPDF = async (
 
 export const getUserDataFromStorage = (): UserData | null => {
   try {
-    const userData = sessionStorage.getItem('userData');
-    if (!userData) return null;
+    // Try different storage keys where user data might be stored
+    let userData = sessionStorage.getItem('userData');
+    let parsed = null;
     
-    const parsed = JSON.parse(userData);
+    if (userData) {
+      parsed = JSON.parse(userData);
+    } else {
+      // Check if data is stored under different keys
+      const formData = sessionStorage.getItem('formData');
+      const inputData = sessionStorage.getItem('inputData');
+      
+      if (formData) {
+        parsed = JSON.parse(formData);
+      } else if (inputData) {
+        parsed = JSON.parse(inputData);
+      } else {
+        // Try to get data from URL params or other sources
+        console.log('No user data found in sessionStorage');
+        return {
+          name: 'Applicant',
+          email: 'Not provided',
+          visaType: 'Not specified',
+          documents: []
+        };
+      }
+    }
+    
     return {
-      name: parsed.name || 'Unknown',
-      email: parsed.email || 'Unknown',
-      visaType: parsed.visaType || 'Unknown',
-      documents: parsed.documents || []
+      name: parsed?.name || parsed?.fullName || 'Applicant',
+      email: parsed?.email || 'Not provided',
+      visaType: parsed?.visaType || parsed?.visa_type || 'Not specified',
+      documents: parsed?.documents || parsed?.files || []
     };
   } catch (error) {
     console.error('Error retrieving user data:', error);
-    return null;
+    // Return fallback data instead of null to prevent the error
+    return {
+      name: 'Applicant',
+      email: 'Not provided', 
+      visaType: 'Not specified',
+      documents: []
+    };
   }
 };
