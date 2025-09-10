@@ -22,8 +22,8 @@ export const generateEvaluationPDF = async (
     const pdf = new jsPDF('p', 'mm', 'a4');
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
-    const margin = 30; // Increased margin for safety
-    const contentWidth = pageWidth - (margin * 2) - 20; // More conservative width
+    const margin = 25.4; // 1 inch margins as per guide
+    const contentWidth = pageWidth - (margin * 2);
     let currentY = 0;
 
     // Dark background for entire page
@@ -31,59 +31,45 @@ export const generateEvaluationPDF = async (
     pdf.rect(0, 0, pageWidth, pageHeight, 'F');
 
     // Helper functions
-    const addSection = (title: string, y: number) => {
-      // Section background with slight transparency
-      pdf.setFillColor(106, 78, 127, 0.1); // visa-lilac with transparency
-      pdf.rect(margin - 5, y - 5, contentWidth + 10, 25, 'F');
+    const addSection = (title: string, y: number, score?: string) => {
+      // Section background - Dark gray (#333333)
+      pdf.setFillColor(51, 51, 51); // #333333
+      pdf.rect(margin, y - 2, contentWidth, 15, 'F');
       
-      // Gold accent line
-      pdf.setFillColor(235, 194, 80); // visa-gold
-      pdf.rect(margin - 5, y - 5, 4, 25, 'F');
-      
-      // Section title
-      pdf.setTextColor(235, 194, 80); // visa-gold
-      pdf.setFontSize(16);
+      // Section title - Bold uppercase gold (#FFD700)
+      pdf.setTextColor(255, 215, 0); // #FFD700
+      pdf.setFontSize(12);
       pdf.setFont('helvetica', 'bold');
-      pdf.text(title, margin + 5, y + 8);
+      const sectionText = score ? `${title.toUpperCase()} (${score})` : title.toUpperCase();
+      pdf.text(sectionText, margin + 3, y + 8);
       
-      return y + 35;
+      return y + 20;
     };
 
-    const addText = (text: string, x: number, y: number, maxWidth: number, fontSize: number = 11, color: 'white' | 'gold' | 'light' = 'white') => {
+    const addText = (text: string, x: number, y: number, maxWidth: number, fontSize: number = 10, color: 'white' | 'gold' | 'light' | 'lightgold' = 'white', style: 'normal' | 'bold' | 'italic' = 'normal') => {
       // Set colors based on theme
       if (color === 'white') {
         pdf.setTextColor(255, 255, 255);
       } else if (color === 'gold') {
-        pdf.setTextColor(235, 194, 80);
+        pdf.setTextColor(255, 215, 0); // #FFD700
       } else if (color === 'light') {
         pdf.setTextColor(200, 200, 200);
+      } else if (color === 'lightgold') {
+        pdf.setTextColor(255, 213, 128); // #FFD580
       }
       
       pdf.setFontSize(fontSize);
-      pdf.setFont('helvetica', 'normal');
+      pdf.setFont('helvetica', style);
       
-      // Ensure maxWidth doesn't exceed page boundaries - calculate available width from x to right margin
-      const safeMaxWidth = Math.min(maxWidth, pageWidth - margin - x - 5); // Extra 5mm safety
+      // Ensure maxWidth doesn't exceed page boundaries
+      const safeMaxWidth = Math.min(maxWidth, pageWidth - margin - x - 5);
       const lines = pdf.splitTextToSize(text, safeMaxWidth);
       pdf.text(lines, x, y);
-      return y + (lines.length * (fontSize * 0.35)) + 4;
+      return y + (lines.length * (fontSize * 0.35)) + 3;
     };
 
-    const addBoldText = (text: string, x: number, y: number, maxWidth: number, fontSize: number = 12, color: 'white' | 'gold' = 'white') => {
-      if (color === 'white') {
-        pdf.setTextColor(255, 255, 255);
-      } else if (color === 'gold') {
-        pdf.setTextColor(235, 194, 80);
-      }
-      
-      pdf.setFontSize(fontSize);
-      pdf.setFont('helvetica', 'bold');
-      
-      // Ensure maxWidth doesn't exceed page boundaries - calculate available width from x to right margin
-      const safeMaxWidth = Math.min(maxWidth, pageWidth - margin - x - 5); // Extra 5mm safety
-      const lines = pdf.splitTextToSize(text, safeMaxWidth);
-      pdf.text(lines, x, y);
-      return y + (lines.length * (fontSize * 0.35)) + 5;
+    const addBoldText = (text: string, x: number, y: number, maxWidth: number, fontSize: number = 10, color: 'white' | 'gold' | 'lightgold' = 'white') => {
+      return addText(text, x, y, maxWidth, fontSize, color, 'bold');
     };
 
     // HEADER SECTION
@@ -118,16 +104,16 @@ export const generateEvaluationPDF = async (
     
     // Score background box
     pdf.setFillColor(106, 78, 127, 0.2); // visa-lilac with transparency
-    pdf.rect(margin, currentY, contentWidth / 2, 45, 'F');
+    pdf.rect(margin, currentY, contentWidth / 2, 35, 'F');
     
     // Large score text
-    pdf.setTextColor(235, 194, 80); // visa-gold
-    pdf.setFontSize(20);
+    pdf.setTextColor(255, 215, 0); // #FFD700
+    pdf.setFontSize(16);
     pdf.setFont('helvetica', 'bold');
-    pdf.text('SUCCESS RATE', margin + 10, currentY + 15);
+    pdf.text('SUCCESS RATE', margin + 5, currentY + 12);
     
-    pdf.setFontSize(42);
-    pdf.text(scoreText, margin + 10, currentY + 35);
+    pdf.setFontSize(32);
+    pdf.text(scoreText, margin + 5, currentY + 28);
     
     // Score interpretation
     let interpretation = '';
@@ -141,8 +127,8 @@ export const generateEvaluationPDF = async (
       interpretation = 'Significant improvement required';
     }
     
-    currentY = addText(interpretation, margin + (contentWidth / 2) + 20, currentY + 20, contentWidth / 2, 12, 'light');
-    currentY += 60;
+    currentY = addText(interpretation, margin + (contentWidth / 2) + 10, currentY + 15, contentWidth / 2, 10, 'light');
+    currentY += 45;
 
     // DETAILED OVERVIEW SECTION
     currentY = addSection('DETAILED EVALUATION OVERVIEW', currentY);
@@ -163,7 +149,7 @@ export const generateEvaluationPDF = async (
       if (!line) continue;
       
       // Check if we need a new page
-      if (currentY > pageHeight - 50) {
+      if (currentY > pageHeight - 40) {
         pdf.addPage();
         // Apply dark background to new page
         pdf.setFillColor(12, 10, 4);
@@ -174,16 +160,13 @@ export const generateEvaluationPDF = async (
       // Detect summary section
       if (line.toLowerCase().includes('summary') && line.includes(':')) {
         inSummary = true;
-        // Summary header with special styling
-        pdf.setFillColor(235, 194, 80, 0.2);
-        pdf.rect(margin - 2, currentY - 3, contentWidth + 4, 20, 'F');
-        currentY = addBoldText('SUMMARY', margin, currentY + 8, contentWidth, 14, 'gold');
+        currentY = addSection('SUMMARY', currentY);
         continue;
       }
       
       // Process summary content
       if (inSummary && !(/^(Awards|Memberships|Media|Employment|Profile)/i.test(line))) {
-        currentY = addText(line, margin, currentY, contentWidth, 11, 'white');
+        currentY = addText(line, margin, currentY, contentWidth, 10, 'white');
         continue;
       } else {
         inSummary = false;
@@ -191,34 +174,27 @@ export const generateEvaluationPDF = async (
       
       // Section headers (Awards, Memberships, etc.)
       if (/^(Awards|Memberships|Media|Employment|Profile)/i.test(line)) {
-        currentY += 10; // Add spacing before new section
+        currentY += 8; // Add spacing before new section
         
         // Extract section name and score if present
         const sectionMatch = line.match(/^(.*?)\s*\(([^)]+)\)/);
         if (sectionMatch) {
           const sectionName = sectionMatch[1].trim();
           const score = sectionMatch[2];
-          
-          // Section header background
-          pdf.setFillColor(106, 78, 127, 0.15);
-          pdf.rect(margin - 2, currentY - 3, contentWidth + 4, 18, 'F');
-          
-          // Section title
-          currentY = addBoldText(sectionName.toUpperCase(), margin, currentY + 8, contentWidth * 0.7, 12, 'gold');
-          
-          // Score on the right
-          pdf.setTextColor(235, 194, 80);
-          pdf.setFontSize(12);
-          pdf.setFont('helvetica', 'bold');
-          pdf.text(`(${score})`, pageWidth - margin - 30, currentY - 8);
-          
-          currentY += 5;
+          currentY = addSection(sectionName, currentY, score);
         } else {
           // Simple section header
-          pdf.setFillColor(106, 78, 127, 0.15);
-          pdf.rect(margin - 2, currentY - 3, contentWidth + 4, 18, 'F');
-          currentY = addBoldText(line.toUpperCase(), margin, currentY + 8, contentWidth, 12, 'gold');
+          currentY = addSection(line, currentY);
         }
+        continue;
+      }
+      
+      // Handle special notes like "High Salary (0/25)"
+      const specialNoteMatch = line.match(/^(.+?)\s*\((\d+\/\d+)\)$/);
+      if (specialNoteMatch && !line.toLowerCase().includes('you have') && !line.toLowerCase().includes('you need')) {
+        const noteText = specialNoteMatch[1];
+        const score = specialNoteMatch[2];
+        currentY = addText(`${noteText} (${score})`, margin + 5, currentY, contentWidth - 10, 9, 'light', 'italic');
         continue;
       }
       
@@ -228,24 +204,28 @@ export const generateEvaluationPDF = async (
         
         // Check for "You have:" or "You need:" patterns
         if (bulletText.toLowerCase().startsWith('you have:')) {
-          currentY = addBoldText('✓ ' + bulletText.substring(9).trim(), margin + 10, currentY, contentWidth - 50, 10, 'white');
+          const content = bulletText.substring(9).trim();
+          currentY = addBoldText('You have:', margin + 10, currentY, contentWidth - 20, 10, 'white');
+          currentY = addText(content, margin + 15, currentY, contentWidth - 25, 10, 'white');
         } else if (bulletText.toLowerCase().startsWith('you need:')) {
-          currentY = addBoldText('→ ' + bulletText.substring(9).trim(), margin + 10, currentY, contentWidth - 50, 10, 'gold');
+          const content = bulletText.substring(9).trim();
+          currentY = addBoldText('You need:', margin + 10, currentY, contentWidth - 20, 10, 'lightgold');
+          currentY = addText(content, margin + 15, currentY, contentWidth - 25, 10, 'white');
         } else {
-          currentY = addText('• ' + bulletText, margin + 10, currentY, contentWidth - 50, 10, 'light');
+          currentY = addText('• ' + bulletText, margin + 10, currentY, contentWidth - 20, 10, 'light');
         }
       } else {
         // Regular paragraph text
-        currentY = addText(line, margin + 5, currentY, contentWidth - 30, 10, 'light');
+        currentY = addText(line, margin + 5, currentY, contentWidth - 10, 10, 'light');
       }
     }
 
     // FOOTER - Fixed formatting
-    currentY = Math.max(currentY + 20, pageHeight - 30);
+    currentY = Math.max(currentY + 15, pageHeight - 25);
     
     // Footer background
-    pdf.setFillColor(235, 194, 80); // visa-gold footer
-    pdf.rect(0, pageHeight - 25, pageWidth, 25, 'F');
+    pdf.setFillColor(255, 215, 0); // Gold footer (#FFD700)
+    pdf.rect(0, pageHeight - 20, pageWidth, 20, 'F');
     
     // Footer text - left side
     pdf.setTextColor(0, 0, 0);
@@ -253,12 +233,12 @@ export const generateEvaluationPDF = async (
     pdf.setFont('helvetica', 'normal');
     
     const disclaimerText = 'This evaluation is for informational purposes only. Consult with immigration professionals for official guidance.';
-    const disclaimerLines = pdf.splitTextToSize(disclaimerText, pageWidth - 150); // More conservative width
-    pdf.text(disclaimerLines, margin, pageHeight - 15);
+    const disclaimerLines = pdf.splitTextToSize(disclaimerText, pageWidth - 120); // Conservative width for company name space
+    pdf.text(disclaimerLines, margin, pageHeight - 12);
     
     // Footer text - right side (company name)
     pdf.setFont('helvetica', 'bold');
-    pdf.text('Sherrod Sports Visas © 2025', pageWidth - 75, pageHeight - 10);
+    pdf.text('Sherrod Sports Visas © 2025', pageWidth - 65, pageHeight - 8);
 
     // Generate filename with timestamp
     const date = new Date().toISOString().split('T')[0];
