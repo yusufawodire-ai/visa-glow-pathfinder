@@ -5,8 +5,8 @@
 
 // Mock data for fallback when webhook fails
 export const fallbackData = {
-  score: "75%",
-  overview: "This is a fallback evaluation generated because the webhook service is currently unavailable. Your application shows moderate strengths but could be improved in key areas. We recommend consulting with an immigration specialist for personalized guidance."
+  score: "0%",
+  overview: "Our system is temporarily unavailable as we perform maintenance. Please try again later to receive your full visa evaluation report.\n\nIn the meantime, you can still connect with our AI Assistant here in the chat to ask questions, receive guidance, and get support for your visa journey. We're here to help you while the service is being restored."
 };
 
 /**
@@ -15,11 +15,22 @@ export const fallbackData = {
 export const parseWebhookResponse = (jsonResponse: any) => {
   console.log('Parsing response:', jsonResponse);
   
-  // Handle nested output object format { output: { score: string, overview: string } }
+  // Handle nested output object format { output: { score: string, overview: string } } or { output: [{ score: string, overview: string }] }
   if (jsonResponse && typeof jsonResponse === 'object' && jsonResponse.output) {
     console.log('Processing nested output response:', jsonResponse.output);
     
-    if ('score' in jsonResponse.output && 'overview' in jsonResponse.output) {
+    // Handle output as array format
+    if (Array.isArray(jsonResponse.output) && jsonResponse.output.length > 0) {
+      const firstOutput = jsonResponse.output[0];
+      if ('score' in firstOutput && 'overview' in firstOutput) {
+        return {
+          score: firstOutput.score,
+          summary: firstOutput.overview
+        };
+      }
+    }
+    // Handle output as direct object format
+    else if ('score' in jsonResponse.output && 'overview' in jsonResponse.output) {
       return {
         score: jsonResponse.output.score,
         summary: jsonResponse.output.overview
@@ -27,12 +38,20 @@ export const parseWebhookResponse = (jsonResponse: any) => {
     }
   }
   
-  // Handle array format [{ output: { score: string, overview: string } }]
+  // Handle array format [{ score: string, overview: string }] (new format)
   if (Array.isArray(jsonResponse) && jsonResponse.length > 0) {
     const firstResult = jsonResponse[0];
     console.log('Processing array response, first item:', firstResult);
     
-    // Check for nested output object
+    // Check for direct properties (new format)
+    if ('score' in firstResult && 'overview' in firstResult) {
+      return {
+        score: firstResult.score,
+        summary: firstResult.overview
+      };
+    }
+    
+    // Check for nested output object (legacy format)
     if (firstResult.output && 'score' in firstResult.output && 'overview' in firstResult.output) {
       return {
         score: firstResult.output.score,
@@ -40,7 +59,7 @@ export const parseWebhookResponse = (jsonResponse: any) => {
       };
     }
     
-    // Check for direct properties
+    // Check for legacy direct properties with summary field
     if ('score' in firstResult) {
       return {
         score: firstResult.score,
@@ -50,7 +69,7 @@ export const parseWebhookResponse = (jsonResponse: any) => {
       console.error('Invalid response structure in array:', jsonResponse);
       throw new Error('Invalid response structure in array');
     }
-  } 
+  }
   // Handle direct object format { score: string|number, summary/overview: string }
   else if (jsonResponse && typeof jsonResponse === 'object' && 'score' in jsonResponse) {
     console.log('Processing object response:', jsonResponse);

@@ -79,7 +79,7 @@ serve(async (req) => {
     // Make the request to the actual webhook with API key
     console.log('Making authenticated request with headers:', Object.keys(headers));
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
+    const timeoutId = setTimeout(() => controller.abort(), 120000); // 120 second timeout
     
     const response = await fetch(webhookUrl, {
       method,
@@ -97,125 +97,33 @@ serve(async (req) => {
       throw new Error(`Webhook HTTP error! Status: ${response.status}`);
     }
 
-    // Get the response
-    const responseText = await response.text();
-    console.log('Webhook response received, length:', responseText.length);
-    console.log('Full webhook response text:', responseText);
-
-    // Handle streaming responses - extract the actual message content, not just metadata
     let responseData;
-    if (responseText.includes('\n') || responseText.includes('}{')) {
-      console.log('Detected streaming response, extracting message content');
+
+    // Process as regular JSON response (no streaming)
+    console.log('Processing regular JSON response...');
+    try {
+      const responseText = await response.text();
+      console.log('Raw response text:', responseText);
+      const jsonResponse = JSON.parse(responseText);
+      console.log('Successfully parsed JSON response:', jsonResponse);
       
-      // Split by newlines and find message content (not just metadata)
-      const lines = responseText.split('\n').filter(line => line.trim());
-      console.log('Found', lines.length, 'lines in stream');
-      let messageContent = null;
-      let allJsonData = [];
-      
-      // Parse all JSON objects in the stream
-      for (let i = 0; i < lines.length; i++) {
-        try {
-          const parsed = JSON.parse(lines[i]);
-          allJsonData.push(parsed);
-          console.log(`Line ${i}:`, parsed);
-          
-          // Look for actual message content (not just metadata or end events)
-          if (parsed.message || parsed.output || parsed.response || parsed.content) {
-            messageContent = parsed;
-            console.log('Found message content in line', i, ':', messageContent);
-          } else if (parsed.type !== 'end' && parsed.type !== 'start' && !parsed.metadata) {
-            // If it's not an end/start event and doesn't contain just metadata, it might be content
-            messageContent = parsed;
-            console.log('Found potential content in line', i, ':', messageContent);
-          }
-        } catch (e) {
-          console.log('Could not parse line', i, 'as JSON:', lines[i]);
-          continue;
-        }
-      }
-      
-      console.log('Total JSON objects found:', allJsonData.length);
-      console.log('Message content found:', messageContent);
-      
-      // If we found message content, use it
-      if (messageContent) {
-        console.log('Successfully extracted message content from stream:', messageContent);
-        responseData = messageContent;
-      } else if (allJsonData.length > 0) {
-        // If no explicit message content found, look for the last non-metadata object
-        const contentEvents = allJsonData.filter(obj => 
-          obj.type !== 'end' && 
-          obj.type !== 'start' && 
-          !obj.metadata &&
-          (obj.message || obj.output || obj.response || obj.content || typeof obj === 'string')
-        );
-        
-        console.log('Content events found:', contentEvents);
-        
-        if (contentEvents.length > 0) {
-          responseData = contentEvents[contentEvents.length - 1];
-          console.log('Using last content event:', responseData);
-        } else {
-          // Fallback: check if any object has meaningful content
-          console.log('No content events found, checking for meaningful data...');
-          for (let i = allJsonData.length - 1; i >= 0; i--) {
-            const obj = allJsonData[i];
-            if (obj && typeof obj === 'object' && Object.keys(obj).length > 0) {
-              // Check if this object has any string values that could be content
-              const hasContent = Object.values(obj).some(val => 
-                typeof val === 'string' && val.length > 10 && !val.includes('nodeId')
-              );
-              if (hasContent) {
-                responseData = obj;
-                console.log('Using object with content:', responseData);
-                break;
-              }
-            }
-          }
-          
-          if (!responseData) {
-            console.error('No message content found in streaming response, using fallback');
-            responseData = { 
-              response: "I received your message but the AI response was not properly formatted. Please try rephrasing your question or contact support if this continues.",
-              isRawText: true 
-            };
-          }
-        }
+      // Extract the message content from the JSON response
+      if (jsonResponse.output) {
+        responseData = jsonResponse.output;
+      } else if (jsonResponse.message) {
+        responseData = jsonResponse.message;
+      } else if (jsonResponse.content) {
+        responseData = jsonResponse.content;
+      } else if (jsonResponse.response) {
+        responseData = jsonResponse.response;
       } else {
-        console.log('No JSON objects found, treating as raw text');
-        responseData = { 
-          response: responseText, 
-          isRawText: true 
-        };
+        // If it's an object with unknown structure, stringify it nicely
+        responseData = JSON.stringify(jsonResponse, null, 2);
       }
-    } else {
-      // Try to parse as single JSON response
-      try {
-        const jsonResponse = JSON.parse(responseText);
-        console.log('Successfully parsed single JSON response:', jsonResponse);
-        
-        // Extract the message content from the JSON response and format consistently
-        let messageContent;
-        if (jsonResponse.output) {
-          messageContent = jsonResponse.output;
-        } else if (jsonResponse.message) {
-          messageContent = jsonResponse.message;
-        } else if (jsonResponse.content) {
-          messageContent = jsonResponse.content;
-        } else if (jsonResponse.response) {
-          messageContent = jsonResponse.response;
-        } else {
-          // If no recognized field, stringify the entire response
-          messageContent = JSON.stringify(jsonResponse);
-        }
-        
-        // Return in consistent format expected by frontend
-        responseData = { response: messageContent };
-      } catch (parseError) {
-        console.error('Failed to parse webhook response as JSON:', parseError);
-        responseData = { response: responseText, isRawText: true };
-      }
+    } catch (parseError) {
+      console.error('Failed to parse webhook response as JSON:', parseError);
+      const responseText = await response.text();
+      responseData = responseText || 'No response content received';
     }
 
     console.log('Final response data being returned:', responseData);

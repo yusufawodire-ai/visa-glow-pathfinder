@@ -1,8 +1,9 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Home, SendHorizontal, Loader2, AlertTriangle, MessageCircle } from 'lucide-react';
+import { Home, SendHorizontal, Loader2, AlertTriangle, MessageCircle, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { getEvaluationResult } from '@/lib/supabase';
@@ -10,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { MessageFormatter } from '@/components/MessageFormatter';
 import { TypingIndicator } from '@/components/TypingIndicator';
+import { generateEvaluationText, getUserDataFromStorage } from '@/services/textService';
 
 interface EvaluationResult {
   score: string | number;
@@ -33,6 +35,7 @@ const ResultPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [chatError, setChatError] = useState<string | null>(null);
   const [sessionId] = useState(`user-${Math.random().toString(36).substring(2, 15)}`);
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -115,11 +118,17 @@ const ResultPage = () => {
 
     const userMessage = currentMessage.trim();
     setCurrentMessage('');
+    
+    // Add user message immediately
     setChatMessages((prev) => [...prev, { sender: 'You', message: userMessage }]);
+    
+    // Add empty AI message for streaming updates
+    const aiMessageIndex = chatMessages.length + 1;
+    setChatMessages((prev) => [...prev, { sender: 'AI', message: '' }]);
     setIsChatLoading(true);
 
     try {
-      console.log('Sending user message to USER_MESSAGE_OUTPUT_WEBHOOK:', { 
+      console.log('Sending user message to chat webhook:', { 
         sessionId, 
         message: userMessage,
         evaluationId: evaluationResult?.evaluationId || 'no-id'
@@ -128,14 +137,11 @@ const ResultPage = () => {
       // Use our secure edge function to proxy the request
       const { data: rawResponse, error } = await supabase.functions.invoke('secure-webhook', {
         body: {
-          webhookUrl: 'https://igta.app.n8n.cloud/webhook/USER_MESSAGE_OUTPUT_WEBHOOK',
+          webhookUrl: "https://igta.app.n8n.cloud/webhook/USER_MESSAGE_OUTPUT_WEBHOOK",
           method: 'POST',
           body: {
-            sessionId,
-            message: userMessage,
-            evaluationId: evaluationResult?.evaluationId || 'no-id',
-            score: evaluationResult?.score,
-            overview: evaluationResult?.overview
+            user_message: userMessage,
+            evaluation_context: evaluationResult
           },
           isFormData: false
         }
@@ -145,59 +151,57 @@ const ResultPage = () => {
         console.error('Supabase function error:', error);
         throw new Error(`Secure webhook call failed: ${error.message}`);
       }
-      console.log('Raw USER_MESSAGE_OUTPUT_WEBHOOK response:', rawResponse);
+      console.log('Raw chat webhook response:', rawResponse);
 
-      // The edge function returns the webhook response as text, so we need to parse it
-      let jsonResponse;
-      try {
-        // rawResponse is a string that needs to be parsed
-        jsonResponse = typeof rawResponse === 'string' ? JSON.parse(rawResponse) : rawResponse;
-        console.log('Parsed USER_MESSAGE_OUTPUT_WEBHOOK response:', jsonResponse);
-      } catch (parseError) {
-        console.error('Error parsing message webhook response:', parseError);
-        throw new Error('Invalid JSON response from message webhook');
+      // Handle the streaming response
+      let aiResponse = '';
+      
+      if (rawResponse) {
+        if (typeof rawResponse === 'string') {
+          aiResponse = rawResponse;
+        } else if (rawResponse.content) {
+          aiResponse = rawResponse.content;
+        } else if (rawResponse.message) {
+          aiResponse = rawResponse.message;
+        } else if (rawResponse.response) {
+          aiResponse = rawResponse.response;
+        } else {
+          aiResponse = JSON.stringify(rawResponse);
+        }
       }
 
-      let aiResponse;
-      if (Array.isArray(jsonResponse) && jsonResponse[0]?.output) {
-        aiResponse = jsonResponse[0].output;
-      } else if (jsonResponse.output) {
-        aiResponse = jsonResponse.output;
-      } else if (jsonResponse.response) {
-        aiResponse = jsonResponse.response;
-      } else if (jsonResponse.message) {
-        aiResponse = jsonResponse.message;
-      } else if (jsonResponse.data && jsonResponse.data.response) {
-        aiResponse = jsonResponse.data.response;
-      } else if (jsonResponse.isRawText && jsonResponse.response) {
-        // Handle raw text responses from streaming
-        aiResponse = jsonResponse.response;
-      } else if (typeof jsonResponse === 'string') {
-        // Handle direct string responses
-        aiResponse = jsonResponse;
-      } else {
-        throw new Error('Response format not recognized');
+      if (!aiResponse) {
+        aiResponse = "I'm sorry, I didn't receive a proper response. Please try again.";
       }
 
-      // Add the AI response
-      setChatMessages((prev) => [...prev, { sender: 'AI', message: aiResponse }]);
+      // Update the AI message with the complete response
+      setChatMessages((prev) => 
+        prev.map((msg, index) => 
+          index === aiMessageIndex ? { ...msg, message: aiResponse } : msg
+        )
+      );
+      
       setChatError(null);
-      setIsChatLoading(false);
     } catch (error) {
       console.error('Error sending message:', error);
       setChatError("Could not send your message. Please try again.");
 
       const defaultResponse = "I'm sorry, I couldn't process your message right now. Please try again or rephrase your question.";
       
-      // Add error response
-      setChatMessages((prev) => [...prev, { sender: 'AI', message: defaultResponse }]);
-      setIsChatLoading(false);
+      // Update the AI message with error response
+      setChatMessages((prev) => 
+        prev.map((msg, index) => 
+          index === aiMessageIndex ? { ...msg, message: defaultResponse } : msg
+        )
+      );
 
       toast({
         title: "Message failed",
         description: "Could not send your message. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsChatLoading(false);
     }
   };
 
@@ -205,6 +209,32 @@ const ResultPage = () => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       sendMessage();
+    }
+  };
+
+  const handleDownloadReport = async () => {
+    if (!evaluationResult) return;
+
+    setIsGeneratingReport(true);
+    try {
+      const userData = getUserDataFromStorage();
+      
+      generateEvaluationText(evaluationResult, userData);
+      
+      toast({
+        title: "Report Downloaded",
+        description: "Your evaluation report has been downloaded successfully.",
+        variant: "default",
+      });
+    } catch (error) {
+      console.error('Report generation failed:', error);
+      toast({
+        title: "Download Failed",
+        description: "Could not generate the report. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingReport(false);
     }
   };
 
@@ -257,9 +287,31 @@ const ResultPage = () => {
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
         {evaluationResult ? (
           <div className="glass-container flex flex-col h-full">
-            <h2 className="text-2xl font-semibold mb-6 text-center bg-gradient-to-r from-visa-gold to-white bg-clip-text text-transparent">
-              Your Chances of Success
-            </h2>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-semibold text-center bg-gradient-to-r from-visa-gold to-white bg-clip-text text-transparent">
+                Your Chances of Success
+              </h2>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      onClick={handleDownloadReport}
+                      disabled={isGeneratingReport}
+                      className="bg-visa-navy hover:bg-visa-navy/80 rounded-full w-10 h-10 p-0 flex items-center justify-center"
+                    >
+                      {isGeneratingReport ? (
+                        <Loader2 size={20} className="animate-spin text-white" />
+                      ) : (
+                        <Download size={20} className="text-white" />
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Download Report (Text)</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
             
             <div className="flex justify-center mb-8">
               <div className="relative h-40 w-40 flex items-center justify-center">
@@ -302,7 +354,7 @@ const ResultPage = () => {
             </h2>
             
             <div className="prose prose-invert flex-grow overflow-auto">
-              <p className="text-white whitespace-pre-line">{evaluationResult.overview}</p>
+              <MessageFormatter content={evaluationResult.overview} isAI={true} />
             </div>
           </div>
         ) : null}
@@ -341,7 +393,8 @@ const ResultPage = () => {
                     )}
                     <MessageFormatter 
                       content={msg.message} 
-                      isAI={msg.sender === 'AI'} 
+                      isAI={msg.sender === 'AI'}
+                      textColor={msg.sender === 'You' ? 'text-black' : 'text-white'}
                     />
                   </div>
                 </div>
