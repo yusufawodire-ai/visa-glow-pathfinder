@@ -2,6 +2,7 @@
 import React from 'react';
 import { LinkIcon, ChevronDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useFormValidation } from '@/hooks/useFormValidation';
 
 interface FormFieldsProps {
   name: string;
@@ -27,6 +28,7 @@ const BasicFormFields: React.FC<FormFieldsProps> = ({
   dropdownOpen, setDropdownOpen
 }) => {
   const { toast } = useToast();
+  const { validateLink } = useFormValidation();
   
   // Updated list of specific visa types
   const visaTypes = ["O-1A", "P-1A", "EB-1A", "O-1B", "P-1B", "O-2", "P-1S"];
@@ -125,12 +127,17 @@ const BasicFormFields: React.FC<FormFieldsProps> = ({
             id="link"
             type="text"
             placeholder="Personal website, articles, press coverage, etc. (No social media account or profile link)"
-            className="input-field pl-10 transition-all duration-300 focus:shadow-[0_0_15px_rgba(167,139,250,0.5)]"
+            className={`input-field pl-10 transition-all duration-300 focus:shadow-[0_0_15px_rgba(167,139,250,0.5)] ${
+              link.trim() && !validateLink(link) ? 'border-red-500 focus:border-red-500' : ''
+            }`}
             value={link}
             onChange={(e) => setLink(e.target.value)}
           />
           <LinkIcon size={18} className="absolute left-3 top-3.5 text-gray-400" />
         </div>
+        {link.trim() && !validateLink(link) && (
+          <p className="text-sm text-red-400 mt-1">Social media links are not supported. Please provide professional websites, portfolios, or press coverage instead.</p>
+        )}
         <p className="text-sm text-white mt-1">Add professional website, portfolios, or press coverage (please do not include social media account or profile link)</p>
       </div>
     </>

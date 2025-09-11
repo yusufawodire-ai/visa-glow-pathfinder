@@ -8,11 +8,27 @@ export const useFormValidation = () => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
 
+  const validateLink = (link: string) => {
+    if (!link.trim()) return true; // Empty link is allowed
+    
+    const socialMediaDomains = [
+      'linkedin.com', 'facebook.com', 'twitter.com', 'x.com',
+      'instagram.com', 'tiktok.com', 'youtube.com', 'youtu.be',
+      'snapchat.com', 'pinterest.com', 'reddit.com', 'github.com'
+    ];
+    
+    const url = link.toLowerCase();
+    return !socialMediaDomains.some(domain => 
+      url.includes(domain) || url.includes(`www.${domain}`)
+    );
+  };
+
   const validateForm = (
     name: string,
     email: string,
     visaType: string,
-    files: File[]
+    files: File[],
+    link: string
   ) => {
     if (!name.trim()) {
       toast({
@@ -41,6 +57,15 @@ export const useFormValidation = () => {
       return false;
     }
     
+    if (link.trim() && !validateLink(link)) {
+      toast({
+        title: "Invalid link",
+        description: "Social media links are not supported. Please provide professional websites, portfolios, or press coverage instead.",
+        variant: "destructive",
+      });
+      return false;
+    }
+    
     if (files.length === 0) {
       toast({
         title: "Missing documents",
@@ -53,5 +78,5 @@ export const useFormValidation = () => {
     return true;
   };
 
-  return { validateEmail, validateForm };
+  return { validateEmail, validateForm, validateLink };
 };
