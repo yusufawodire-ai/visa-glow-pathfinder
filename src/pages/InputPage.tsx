@@ -28,7 +28,7 @@ const InputPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!validateForm(name, email, visaType, files)) {
+    if (!validateForm(name, email, visaType, files, link)) {
       return;
     }
     
