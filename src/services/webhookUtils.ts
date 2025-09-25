@@ -109,8 +109,10 @@ export const prepareFormData = (data: {
   visaType: string;
   files: File[];
   link?: string;
+  industry?: string;
+  story?: string;
 }): FormData => {
-  const { name, email, phone, visaType, files, link } = data;
+  const { name, email, phone, visaType, files, link, industry, story } = data;
   const formData = new FormData();
   
   formData.append('name', name);
@@ -119,6 +121,8 @@ export const prepareFormData = (data: {
   formData.append('visaType', visaType);
   files.forEach(file => formData.append('files', file));
   if (link) formData.append('link', link);
+  if (industry) formData.append('industry', industry);
+  if (story) formData.append('story', story);
   
   return formData;
 };

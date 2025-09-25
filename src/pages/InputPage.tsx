@@ -20,6 +20,8 @@ const InputPage = () => {
   const [visaType, setVisaType] = useState('');
   const [files, setFiles] = useState<File[]>([]);
   const [link, setLink] = useState('');
+  const [industry, setIndustry] = useState('');
+  const [story, setStory] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   
@@ -41,7 +43,9 @@ const InputPage = () => {
         phone,
         visaType,
         files,
-        link
+        link,
+        industry,
+        story
       });
       
       sessionStorage.setItem('evaluationResult', JSON.stringify(result));
@@ -87,6 +91,10 @@ const InputPage = () => {
             setVisaType={setVisaType}
             link={link}
             setLink={setLink}
+            industry={industry}
+            setIndustry={setIndustry}
+            story={story}
+            setStory={setStory}
             dropdownOpen={dropdownOpen}
             setDropdownOpen={setDropdownOpen}
           />

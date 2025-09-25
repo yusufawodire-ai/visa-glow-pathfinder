@@ -16,6 +16,8 @@ export interface EvaluationResultData {
   visaType: string;
   files: File[];
   link?: string;
+  industry?: string;
+  story?: string;
 }
 
 export interface WebhookResponse {
@@ -211,7 +213,7 @@ async function handleErrorWithFallback(
  * Main function to submit evaluation data and get results
  */
 export const submitEvaluationData = async (data: EvaluationResultData) => {
-  const { name, email, phone, visaType, files, link } = data;
+  const { name, email, phone, visaType, files, link, industry, story } = data;
   
   // Prepare form data
   const formData = prepareFormData(data);
@@ -222,7 +224,9 @@ export const submitEvaluationData = async (data: EvaluationResultData) => {
     phone, 
     visaType, 
     filesCount: files.length, 
-    link 
+    link,
+    industry,
+    story
   });
   
   console.log('Sending data to webhook...');
