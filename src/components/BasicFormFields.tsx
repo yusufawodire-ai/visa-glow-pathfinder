@@ -15,6 +15,10 @@ interface FormFieldsProps {
   setVisaType: React.Dispatch<React.SetStateAction<string>>;
   link: string;
   setLink: React.Dispatch<React.SetStateAction<string>>;
+  industry: string;
+  setIndustry: React.Dispatch<React.SetStateAction<string>>;
+  story: string;
+  setStory: React.Dispatch<React.SetStateAction<string>>;
   dropdownOpen: boolean;
   setDropdownOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
@@ -25,6 +29,8 @@ const BasicFormFields: React.FC<FormFieldsProps> = ({
   phone, setPhone,
   visaType, setVisaType,
   link, setLink,
+  industry, setIndustry,
+  story, setStory,
   dropdownOpen, setDropdownOpen
 }) => {
   const { toast } = useToast();
@@ -139,6 +145,29 @@ const BasicFormFields: React.FC<FormFieldsProps> = ({
           <p className="text-sm text-red-400 mt-1">Social media links are not supported. Please provide professional websites, portfolios, or press coverage instead.</p>
         )}
         <p className="text-sm text-white mt-1">Add professional website, portfolios, or press coverage (please do not include social media account or profile link)</p>
+      </div>
+      
+      <div>
+        <label htmlFor="industry" className="block text-white mb-2 font-medium">Industry/Profession <span className="text-gray-400">(Optional)</span></label>
+        <input
+          id="industry"
+          type="text"
+          placeholder="e.g., Software Engineering, Professional Sports, Entertainment, etc."
+          className="input-field transition-all duration-300 focus:shadow-[0_0_15px_rgba(167,139,250,0.5)]"
+          value={industry}
+          onChange={(e) => setIndustry(e.target.value)}
+        />
+      </div>
+      
+      <div>
+        <label htmlFor="story" className="block text-white mb-2 font-medium">Your Story <span className="text-gray-400">(Optional)</span></label>
+        <textarea
+          id="story"
+          placeholder="Tell us about your background, achievements, and how we can help you with your visa application..."
+          className="input-field min-h-[120px] resize-vertical transition-all duration-300 focus:shadow-[0_0_15px_rgba(167,139,250,0.5)]"
+          value={story}
+          onChange={(e) => setStory(e.target.value)}
+        />
       </div>
     </>
   );
