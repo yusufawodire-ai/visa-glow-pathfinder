@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, ExternalLink } from 'lucide-react';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -28,14 +28,24 @@ const Index = () => {
           Upload your documents and get a detailed evaluation of your visa eligibility with personalized recommendations.
         </p>
         
-        <div className="pt-6">
+        <div className="pt-6 flex flex-col sm:flex-row gap-4 justify-center items-center">
           <button 
             onClick={() => navigate('/input')}
-            className="bg-visa-gold hover:bg-amber-500 text-black px-6 py-3 rounded-md text-lg font-medium transition-colors group"
+            className="bg-visa-gold hover:bg-amber-500 text-black px-6 py-3 rounded-md text-lg font-medium transition-colors group w-full sm:w-auto"
           >
             Start Evaluation
             <ArrowRight className="ml-2 inline-block group-hover:translate-x-1 transition-transform" size={20} />
           </button>
+          
+          <a 
+            href="http://support.innovativeautomations.dev"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center border-2 border-visa-gold text-visa-gold px-6 py-3 rounded-md text-lg font-medium transition-all hover:bg-visa-gold/10 group w-full sm:w-auto"
+          >
+            Work With Us
+            <ExternalLink className="ml-2 inline-block group-hover:translate-x-1 transition-transform" size={20} />
+          </a>
         </div>
       </div>
       
