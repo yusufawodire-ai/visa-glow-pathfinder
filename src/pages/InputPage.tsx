@@ -1,6 +1,5 @@
 
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import FileUpload from '@/components/FileUpload';
 import InstructionsSection from '@/components/InstructionsSection';
@@ -12,7 +11,6 @@ import { useFormValidation } from '@/hooks/useFormValidation';
 import { submitEvaluationData } from '@/services/webhookService';
 
 const InputPage = () => {
-  const navigate = useNavigate();
   const { toast } = useToast();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -24,20 +22,21 @@ const InputPage = () => {
   const [story, setStory] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  
+  const [submitted, setSubmitted] = useState(false);
+
   const { validateForm } = useFormValidation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm(name, email, visaType, files, link)) {
       return;
     }
-    
+
     setIsLoading(true);
-    
+
     try {
-      const result = await submitEvaluationData({
+      await submitEvaluationData({
         name,
         email,
         phone,
@@ -47,16 +46,9 @@ const InputPage = () => {
         industry,
         story
       });
-      
-      sessionStorage.setItem('evaluationResult', JSON.stringify(result));
-      
+
       setIsLoading(false);
-      toast({
-        title: "Evaluation complete",
-        description: "Your documents have been successfully analyzed",
-        variant: "default",
-      });
-      navigate('/result');
+      setSubmitted(true);
     } catch (error) {
       console.error('Error submitting form:', error);
       toast({
@@ -75,37 +67,53 @@ const InputPage = () => {
         logoAlt="Sherrod Sports Visas"
       />
       
-      <FormContainer
-        title="Start Visa Assessment"
-        description="Upload your documents and get a detailed evaluation of your visa eligibility with personalized recommendations."
-      >
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <BasicFormFields 
-            name={name}
-            setName={setName}
-            email={email}
-            setEmail={setEmail}
-            phone={phone}
-            setPhone={setPhone}
-            visaType={visaType}
-            setVisaType={setVisaType}
-            link={link}
-            setLink={setLink}
-            industry={industry}
-            setIndustry={setIndustry}
-            story={story}
-            setStory={setStory}
-            dropdownOpen={dropdownOpen}
-            setDropdownOpen={setDropdownOpen}
-          />
-          
-          <FileUpload files={files} setFiles={setFiles} />
-          
-          <InstructionsSection />
-          
-          <SubmitButton isLoading={isLoading} />
-        </form>
-      </FormContainer>
+      {submitted ? (
+        <FormContainer
+          title="Thank You"
+          description=""
+        >
+          <div className="text-center text-gray-200 space-y-4 py-4">
+            <p className="text-lg">
+              Thank you for submitting your information. Our team will review your details and get back to you shortly with the next steps.
+            </p>
+            <p className="text-lg">
+              We appreciate your interest and look forward to speaking with you soon.
+            </p>
+          </div>
+        </FormContainer>
+      ) : (
+        <FormContainer
+          title="Start Visa Assessment"
+          description="Upload your documents and get a detailed evaluation of your visa eligibility with personalized recommendations."
+        >
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <BasicFormFields
+              name={name}
+              setName={setName}
+              email={email}
+              setEmail={setEmail}
+              phone={phone}
+              setPhone={setPhone}
+              visaType={visaType}
+              setVisaType={setVisaType}
+              link={link}
+              setLink={setLink}
+              industry={industry}
+              setIndustry={setIndustry}
+              story={story}
+              setStory={setStory}
+              dropdownOpen={dropdownOpen}
+              setDropdownOpen={setDropdownOpen}
+            />
+
+            <FileUpload files={files} setFiles={setFiles} />
+
+            <InstructionsSection />
+
+            <SubmitButton isLoading={isLoading} />
+          </form>
+        </FormContainer>
+      )}
     </div>
   );
 };
